@@ -51,6 +51,18 @@
         "ENABLE_ALL_WARNINGS": "ON",
         "BUILD_TESTS": "ON"
       }
+    },
+    {
+      "name": "appimage",
+      "displayName": "AppImage",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build-appimage/",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_CXX_COMPILER": "g++",
+        "FETCHCONTENT_TRY_FIND_PACKAGE_MODE": "NEVER",
+        "BUILD_TESTS": "OFF"
+      }
     }
   ],
   "buildPresets": [
@@ -71,6 +83,11 @@
       "name": "test",
       "configurePreset": "test",
       "targets": ["unittest"]
+    },
+    {
+      "name": "appimage",
+      "configurePreset": "appimage",
+      "targets": ["mydoomlauncher"]
     }
   ],
   "testPresets": [
