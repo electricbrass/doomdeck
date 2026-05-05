@@ -12,7 +12,8 @@
         "CMAKE_C_COMPILER": "clang",
         "CMAKE_CXX_COMPILER": "clang++",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-        "ENABLE_ALL_WARNINGS": "ON"
+        "ENABLE_ALL_WARNINGS": "ON",
+        "ENABLE_WERROR": "OFF"
       }
     },
     {
@@ -49,6 +50,9 @@
         "CMAKE_CXX_COMPILER": "clang++",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
         "ENABLE_ALL_WARNINGS": "ON",
+        "ENABLE_WERROR": "ON",
+        "ENABLE_ASAN": "ON",
+        "ENABLE_UBSAN": "ON",
         "BUILD_TESTS": "ON"
       }
     },

@@ -17,6 +17,7 @@ export module desktopfileloader;
 import std;
 
 namespace fs = std::filesystem;
+using namespace std::string_view_literals;
 
 // TODO: maybe restucture to have static factory methods
 // that are use for different ways of loading the paths
@@ -51,6 +52,21 @@ inline auto rtrim(std::string_view s) -> std::string_view {
 
 inline auto trim(const std::string_view s) -> std::string_view { return ltrim(rtrim(s)); }
 
+// constexpr std::array doomMimeTypes = {
+//     "application/x-doom-wad"sv,
+//     "application/x-doom-pk3"sv,
+//     "application/x-doom-pk7"sv,
+// };
+
+// constexpr std::array doomCategories = {
+//     "Doom"sv, "Heretic"sv, "Hexen"sv, "Shooter"sv, "Game"sv, "ActionGame"sv,
+// };
+
+// constexpr std::array doomKeywords = {
+//     "Doom"sv, "Heretic"sv, "Hexen"sv, "iwad"sv,   "pwad"sv,
+//     "boom"sv, "mbf"sv,     "mbf21"sv, "prboom"sv, "zdoom"sv,
+// };
+
 } // namespace
 
 export class DesktopFileLoader {
@@ -65,6 +81,7 @@ private:
         std::vector<std::string> categories;
         std::vector<std::string> mimetypes;
         std::optional<bool> hidden;
+        fs::path path;
     };
     std::unordered_map<std::string, DesktopFile> m_parsedFiles;
 
@@ -83,9 +100,11 @@ private:
 
     // TODO: just make this take in a stream or something, so that parsing can be
     // tested from just strings
-    static auto parseFile(std::istream& stream) -> std::expected<DesktopFile, ParseError> {
+    static auto parseFile(std::istream& stream, fs::path path = {})
+        -> std::expected<DesktopFile, ParseError> {
         using enum ParseError;
         DesktopFile file;
+        file.path = std::move(path);
         std::string line;
         while (std::getline(stream, line)) {
             std::string_view trimmed = trim(line);
@@ -163,7 +182,7 @@ public:
                     continue;
                 }
 
-                if (const auto result = parseFile(stream)) {
+                if (const auto result = parseFile(stream, entry.path())) {
                     m_parsedFiles[entry.path().stem().string()] = *result;
                 } else {
                     // log error somehow
