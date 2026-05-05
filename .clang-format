@@ -8,4 +8,6 @@ DerivePointerAlignment: false
 PointerAlignment: Left
 AccessModifierOffset: -4
 AlignArrayOfStructures: Left
+ColumnLimit: 100
+BreakConstructorInitializers: BeforeColon
 ---

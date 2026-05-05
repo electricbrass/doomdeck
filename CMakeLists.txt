@@ -193,6 +193,13 @@ if(BUILD_TESTS)
     test/foo.cpp
   )
 
+  set_target_properties(unittest
+    PROPERTIES
+      CXX_STANDARD 23
+      CXX_STANDARD_REQUIRED ON
+      CXX_MODULE_STD ON
+  )
+
   target_link_libraries(unittest PRIVATE Catch2::Catch2WithMain)
 
   include(CTest)
