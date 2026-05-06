@@ -15,6 +15,7 @@
 export module desktopfileloader;
 
 import std;
+import stringutils;
 
 namespace fs = std::filesystem;
 using namespace std::string_view_literals;
@@ -36,26 +37,11 @@ using namespace std::string_view_literals;
 
 namespace {
 
-inline auto ltrim(std::string_view s) -> std::string_view {
-    const auto it = std::ranges::find_if(s, [](unsigned char c) { return !std::isspace(c); });
-    s.remove_prefix(static_cast<std::string_view::size_type>(it - s.begin()));
-    return s;
-}
-
-inline auto rtrim(std::string_view s) -> std::string_view {
-    // TODO: verify that using reverse like this is safe
-    const auto it = std::ranges::find_if(std::views::reverse(s),
-                                         [](unsigned char c) { return !std::isspace(c); });
-    s.remove_suffix(static_cast<std::string_view::size_type>(it - s.rbegin()));
-    return s;
-}
-
-inline auto trim(const std::string_view s) -> std::string_view { return ltrim(rtrim(s)); }
-
 // constexpr std::array doomMimeTypes = {
 //     "application/x-doom-wad"sv,
 //     "application/x-doom-pk3"sv,
 //     "application/x-doom-pk7"sv,
+//     "application/x-doom-pke"sv,
 // };
 
 // constexpr std::array doomCategories = {
@@ -77,15 +63,20 @@ private:
         // should ignore all with type != application
         std::string name;
         std::optional<bool> exec;
+        std::optional<std::string> icon; // may or may not use this
         std::vector<std::string> keywords;
         std::vector<std::string> categories;
         std::vector<std::string> mimetypes;
         std::optional<bool> hidden;
+        std::optional<bool> terminal;       // might need this? not sure yet
+        std::optional<std::string> flatpak; // flatpak id from X-Flatpak
         fs::path path;
     };
     std::unordered_map<std::string, DesktopFile> m_parsedFiles;
 
-    enum struct ParseError {};
+    enum struct ParseError {
+        MissingHeader,
+    };
 
     struct SectionHeader {
         std::string name;
@@ -102,17 +93,37 @@ private:
     // tested from just strings
     static auto parseFile(std::istream& stream, fs::path path = {})
         -> std::expected<DesktopFile, ParseError> {
+        using stringutil::trim;
         using enum ParseError;
         DesktopFile file;
         file.path = std::move(path);
         std::string line;
+        enum struct ParseState {
+            Header,
+            Section,
+        };
+        ParseState state = ParseState::Header;
         while (std::getline(stream, line)) {
             std::string_view trimmed = trim(line);
             if (trimmed.empty() || trimmed[0] == '#') {
                 continue;
             }
-            if (trimmed.front() == '[' && trimmed.back() == ']') {
-                // section header
+            switch (state) {
+                using enum ParseState;
+                case Header:
+                    if (trimmed.front() == '[' && trimmed.back() == ']') {
+                        trimmed.remove_prefix(1);
+                        trimmed.remove_suffix(1);
+                        if (trim(trimmed) != "Desktop Entry"sv) {
+                            return std::unexpected(MissingHeader);
+                        }
+                        state = Section;
+                        continue;
+                    }
+                    break;
+                case Section:
+
+                    break;
             }
         }
         return file;
@@ -128,6 +139,14 @@ private:
             dir = (dir / "applications").lexically_normal();
             return !seen.insert(dir).second;
         });
+    }
+
+    [[nodiscard]]
+    static auto desktopFileId(const fs::path& base, const fs::path& path) -> std::string {
+        const fs::path relative = path.lexically_relative(base).replace_extension();
+        std::string result = relative.string();
+        std::ranges::replace(result, '/', '-');
+        return result;
     }
 
 public:
@@ -167,6 +186,7 @@ public:
                 continue;
             }
 
+            // TODO: scan subdirectories as well
             for (const auto& entry : std::views::filter(
                      fs::directory_iterator(dir), [](const fs::directory_entry& entry) {
                          return entry.path().extension() == ".desktop";
@@ -183,7 +203,7 @@ public:
                 }
 
                 if (const auto result = parseFile(stream, entry.path())) {
-                    m_parsedFiles[entry.path().stem().string()] = *result;
+                    m_parsedFiles[desktopFileId(dir, entry.path())] = *result;
                 } else {
                     // log error somehow
                 }

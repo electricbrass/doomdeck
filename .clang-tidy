@@ -12,6 +12,8 @@ Checks: >
   -misc-no-recursion,
   cppcoreguidelines-*,
   -cppcoreguidelines-pro-type-vararg,
+  google-explicit-constructor,
+  google-runtime-int,
   readability-*,
   -readability-identifier-length,
   -readability-qualified-auto,

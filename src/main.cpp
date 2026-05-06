@@ -42,18 +42,16 @@ auto main() -> int {
     Rml::Initialise();
 
     // Create a context to display documents within.
-    Rml::Context* context =
-        Rml::CreateContext("main", Rml::Vector2i(window_width, window_height));
+    Rml::Context* context = Rml::CreateContext("main", Rml::Vector2i(window_width, window_height));
 
     // Tell RmlUi to load the given fonts.
-    Rml::LoadFontFace("Lato-Regular.ttf");
+    Rml::LoadFontFace("res/Lato-Regular.ttf");
     // Fonts can be registered as fallback fonts, as in this case to display
     // emojis.
-    Rml::LoadFontFace("NotoColorEmoji.ttf", true);
+    Rml::LoadFontFace("res/NotoColorEmoji.ttf", true);
 
     // Set up data bindings to synchronize application data.
-    if (Rml::DataModelConstructor constructor =
-            context->CreateDataModel("animals")) {
+    if (Rml::DataModelConstructor constructor = context->CreateDataModel("animals")) {
         constructor.Bind("show_text", &my_data.show_text);
         constructor.Bind("animal", &my_data.animal);
     }

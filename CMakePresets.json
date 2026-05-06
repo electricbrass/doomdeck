@@ -65,6 +65,8 @@
         "CMAKE_C_COMPILER": "gcc",
         "CMAKE_CXX_COMPILER": "g++",
         "FETCHCONTENT_TRY_FIND_PACKAGE_MODE": "NEVER",
+        "ENABLE_ASAN": "OFF",
+        "ENABLE_UBSAN": "OFF",
         "BUILD_TESTS": "OFF"
       }
     }

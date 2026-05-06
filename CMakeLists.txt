@@ -15,6 +15,7 @@ target_sources(mydoomlauncher_lib
   PUBLIC FILE_SET CXX_MODULES FILES
     src/foo.cpp
     src/desktopfileloader.cpp
+    src/stringutils.cpp
 )
 
 add_executable(mydoomlauncher)
@@ -30,11 +31,11 @@ target_link_libraries(mydoomlauncher PRIVATE mydoomlauncher_lib)
 # TODO: add options for sanitizers: ASan, UBSan, and others
 # probably no need for TSan here
 
-option(ENABLE_ALL_WARNINGS "" OFF)
-option(ENABLE_WERROR "" OFF)
-option(ENABLE_UBSAN "" OFF)
-option(ENABLE_ASAN "" OFF)
-option(BUILD_TESTS "" OFF)
+option(ENABLE_ALL_WARNINGS "Enable all compiler warnings" OFF)
+option(ENABLE_WERROR "Treat compiler warnings as errors" OFF)
+option(ENABLE_UBSAN "Enable undefined behavior sanitizer" OFF)
+option(ENABLE_ASAN "Enable address sanitizer" OFF)
+option(BUILD_TESTS "Build unit tests" OFF)
 
 # TODO: add options for static linking of standard library, SDL, and freetype
 # Other dependencies will probably just do as always static
