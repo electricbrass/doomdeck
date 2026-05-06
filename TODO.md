@@ -74,3 +74,7 @@ when adding individual wads to the library, we should have extension filters
 
 the extensions i know of are wad, deh, bex, pk3, pk7, pke, zip, 7z, pkz, ipk3, ipk7, pwad, iwad
 we want the all files option to always be available, and if possible we probably want multiple sets of filters, its simpler to have some of these just in the drop down
+
+**licences**
+
+make sure all libraries and fonts are properly attributed
