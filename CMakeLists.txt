@@ -2,31 +2,33 @@ cmake_minimum_required(VERSION 4.0)
 
 set(CMAKE_EXPERIMENTAL_CXX_IMPORT_STD 451f2fe2-a8a2-47c3-bc32-94786d8fc91b)
 set(CMAKE_COLOR_DIAGNOSTICS ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 project(
-  MyDoomLauncher
+  DoomDeck
   VERSION 0.1.0
   DESCRIPTION "A Linux-first Doom launcher"
 )
 
-add_library(mydoomlauncher_lib STATIC)
+add_library(doomdeck_lib STATIC)
 
-target_sources(mydoomlauncher_lib
+target_sources(doomdeck_lib
   PUBLIC FILE_SET CXX_MODULES FILES
     src/foo.cpp
     src/desktopfileloader.cpp
     src/stringutils.cpp
+    src/errors.cpp
 )
 
-add_executable(mydoomlauncher)
+add_executable(doomdeck)
 
-target_sources(mydoomlauncher
+target_sources(doomdeck
   PRIVATE
     src/main.cpp
     src/RmlUi_Backend_SDL_SDLrenderer.cpp
 )
 
-target_link_libraries(mydoomlauncher PRIVATE mydoomlauncher_lib)
+target_link_libraries(doomdeck PRIVATE doomdeck_lib)
 
 # TODO: add options for sanitizers: ASan, UBSan, and others
 # probably no need for TSan here
@@ -44,7 +46,7 @@ option(BUILD_TESTS "Build unit tests" OFF)
 # dev and ci should have pretty much maximal warnings and errors
 # user should just have stuff we can guarantee
 # like class-memaccess or old-style-cast
-# target_compile_options(mydoomlauncher PRIVATE "-Werror")
+# target_compile_options(doomdeck PRIVATE "-Werror")
 
 include(CheckCXXCompilerFlag)
 
@@ -90,6 +92,7 @@ function(configure_target target)
     "-Werror=non-virtual-dtor"
     "-Werror=cast-user-defined"
     "-Werror=switch"
+    "-Werror=zero-as-null-pointer-constant"
   )
 
   checked_add_compile_flag_alternative(${target}
@@ -128,8 +131,8 @@ function(configure_target target)
   )
 endfunction()
 
-configure_target(mydoomlauncher)
-configure_target(mydoomlauncher_lib)
+configure_target(doomdeck)
+configure_target(doomdeck_lib)
 
 # TODO: make sure the correct cmake options are set for when building these
 # Add cmake options to force or disable the fetching?
@@ -139,6 +142,17 @@ configure_target(mydoomlauncher_lib)
 include(FetchContent)
 
 FetchContent_Declare(
+  zlib-ng
+  GIT_REPOSITORY https://github.com/zlib-ng/zlib-ng
+  GIT_TAG 2.3.3
+  GIT_SHALLOW
+  FIND_PACKAGE_ARGS
+)
+FetchContent_MakeAvailable(zlib-ng)
+# TODO: static or shared for this?
+target_link_libraries(doomdeck_lib PUBLIC zlib-ng::zlib)
+
+FetchContent_Declare(
   nlohmann_json
   GIT_REPOSITORY https://github.com/nlohmann/json
   GIT_TAG v3.12.0
@@ -146,17 +160,17 @@ FetchContent_Declare(
   FIND_PACKAGE_ARGS
 )
 FetchContent_MakeAvailable(nlohmann_json)
-target_link_libraries(mydoomlauncher_lib PUBLIC nlohmann_json::nlohmann_json)
+target_link_libraries(doomdeck_lib PUBLIC nlohmann_json::nlohmann_json)
 
 FetchContent_Declare(
   SDL3
   GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
-  GIT_TAG release-3.4.8
+  GIT_TAG release-3.4.12
   GIT_SHALLOW
   FIND_PACKAGE_ARGS
 )
 FetchContent_MakeAvailable(SDL3)
-target_link_libraries(mydoomlauncher PRIVATE SDL3::SDL3)
+target_link_libraries(doomdeck PRIVATE SDL3::SDL3)
 
 FetchContent_Declare(
   SDL3_image
@@ -166,7 +180,7 @@ FetchContent_Declare(
   FIND_PACKAGE_ARGS
 )
 FetchContent_MakeAvailable(SDL3_image)
-target_link_libraries(mydoomlauncher PRIVATE SDL3_image::SDL3_image)
+target_link_libraries(doomdeck PRIVATE SDL3_image::SDL3_image)
 
 FetchContent_Declare(
   Freetype
@@ -176,7 +190,7 @@ FetchContent_Declare(
   FIND_PACKAGE_ARGS
 )
 FetchContent_MakeAvailable(Freetype)
-target_link_libraries(mydoomlauncher PRIVATE Freetype::Freetype)
+target_link_libraries(doomdeck PRIVATE Freetype::Freetype)
 
 FetchContent_Declare(
   RmlUi
@@ -186,7 +200,7 @@ FetchContent_Declare(
   SYSTEM # suppress warnings on includes
 )
 FetchContent_MakeAvailable(RmlUi)
-target_link_libraries(mydoomlauncher PRIVATE RmlUi::RmlUi)
+target_link_libraries(doomdeck PRIVATE RmlUi::RmlUi)
 
 set(RMLUI_BACKEND_PATH ${RmlUi_SOURCE_DIR}/Backends)
 add_library(rmlui_backend_SDL
@@ -209,7 +223,7 @@ target_compile_definitions(rmlui_backend_SDL
 # )
 target_compile_options(rmlui_backend_SDL PRIVATE "-w")
 target_link_libraries(rmlui_backend_SDL PUBLIC RmlUi::RmlUi)
-target_link_libraries(mydoomlauncher PRIVATE rmlui_backend_SDL)
+target_link_libraries(doomdeck PRIVATE rmlui_backend_SDL)
 
 # TODO: Figure out how install works
 # need to install binary, icons, metainfo, desktop file
@@ -223,7 +237,7 @@ if(BUILD_TESTS)
 
   configure_target(unittest)
 
-  target_link_libraries(unittest PRIVATE mydoomlauncher_lib)
+  target_link_libraries(unittest PRIVATE doomdeck_lib)
   target_link_libraries(unittest PRIVATE Catch2::Catch2WithMain)
 
   include(CTest)

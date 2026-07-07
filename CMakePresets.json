@@ -75,7 +75,7 @@
     {
       "name": "dev",
       "configurePreset": "dev",
-      "targets": ["mydoomlauncher"]
+      "targets": ["doomdeck"]
     },
     {
       "name": "ci-gcc",
@@ -93,7 +93,7 @@
     {
       "name": "appimage",
       "configurePreset": "appimage",
-      "targets": ["mydoomlauncher"]
+      "targets": ["doomdeck"]
     }
   ],
   "testPresets": [

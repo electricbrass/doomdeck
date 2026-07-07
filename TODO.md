@@ -25,10 +25,19 @@ file cli options examples:
 |bex| -bex |
 |pk3| -file |
 |pk7| -file |
+|**Kex**| |
+|always| -skipmovies |
+|wad| -file |
+|deh| not sure |
+|bex| not sure |
+|pk3/pk7| unsupported |
 
 not sure yet if we should just implicitly have file type support in the cli options or if we should also have a separate list of supported file types. probably the latter
 
 should chocolates -file also be added as an option somehow? no other port has the distinction between the two ways of loading
+or the other version of -merge thats slightly different?
+
+also need to remember -dehlump for chocolate
 
 Common cli options:
 | effect | cli option |
