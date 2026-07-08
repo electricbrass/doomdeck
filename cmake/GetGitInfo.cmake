@@ -1,0 +1,43 @@
+find_package(Git 2.22 QUIET)
+
+if (Git_FOUND)
+  execute_process(
+    COMMAND ${GIT_EXECUTABLE} branch --show-current
+    OUTPUT_VARIABLE GIT_BRANCH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
+
+  execute_process(
+    COMMAND ${GIT_EXECUTABLE} rev-parse HEAD
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE GIT_HASH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
+
+  execute_process(
+    COMMAND ${GIT_EXECUTABLE} rev-parse --short=7 HEAD
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE GIT_SHORT_HASH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
+
+  execute_process(
+    COMMAND ${GIT_EXECUTABLE} show -s --format=%cs HEAD
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE GIT_COMMIT_DATE
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
+
+  execute_process(
+    COMMAND ${GIT_EXECUTABLE} status --porcelain
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE GIT_STATUS
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
+
+  if(GIT_STATUS)
+    set(GIT_DIRTY true)
+  else()
+    set(GIT_DIRTY false)
+  endif()
+endif()

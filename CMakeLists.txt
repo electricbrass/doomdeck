@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 4.0)
 set(CMAKE_EXPERIMENTAL_CXX_IMPORT_STD 451f2fe2-a8a2-47c3-bc32-94786d8fc91b)
 set(CMAKE_COLOR_DIAGNOSTICS ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 project(
   DoomDeck
@@ -10,7 +11,16 @@ project(
   DESCRIPTION "A Linux-first Doom launcher"
 )
 
+string(TOLOWER "${PROJECT_NAME}" PROJECT_NAME_LOWER)
+
 add_library(doomdeck_lib STATIC)
+
+include(GetGitInfo)
+string(TIMESTAMP BUILD_DATE "%Y-%m-%d" UTC)
+configure_file(
+  src/appinfo_config.cpp.in
+  appinfo_config.cpp
+)
 
 target_sources(doomdeck_lib
   PUBLIC FILE_SET CXX_MODULES FILES
@@ -18,6 +28,9 @@ target_sources(doomdeck_lib
     src/desktopfileloader.cpp
     src/stringutils.cpp
     src/errors.cpp
+    src/directories.cpp
+    src/appinfo.cpp
+    ${CMAKE_CURRENT_BINARY_DIR}/appinfo_config.cpp
 )
 
 add_executable(doomdeck)

@@ -1,0 +1,43 @@
+/*
+ * Copyright (C) 2026  Mia McMahill
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+export module appinfo:config;
+
+import std;
+
+namespace appinfo {
+
+export inline constexpr std::string_view name = "@PROJECT_NAME@";
+export inline constexpr std::string_view lowercase_name = "@PROJECT_NAME_LOWER@";
+export inline constexpr std::string_view version_string = "@PROJECT_VERSION@";
+export inline constexpr std::string_view build_date = "@BUILD_DATE@";
+// clang-format off
+inline constexpr unsigned int version_major = @PROJECT_VERSION_MAJOR@;
+inline constexpr unsigned int version_minor = @PROJECT_VERSION_MINOR@;
+inline constexpr unsigned int version_patch = @PROJECT_VERSION_PATCH@;
+// clang-format on
+
+namespace git {
+
+export inline constexpr std::string_view branch = "@GIT_BRANCH@";
+export inline constexpr std::string_view commit = "@GIT_SHORT_HASH@";
+export inline constexpr std::string_view commit_full = "@GIT_HASH@";
+export inline constexpr std::string_view commit_date = "@GIT_COMMIT_DATE@";
+// clang-format off
+export inline constexpr bool is_dirty = @GIT_DIRTY@;
+// clang-format on
+
+} // namespace git
+
+} // namespace appinfo
