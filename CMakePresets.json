@@ -99,7 +99,10 @@
   "testPresets": [
     {
       "name": "test",
-      "configurePreset": "test"
+      "configurePreset": "test",
+      "output": {
+        "outputOnFailure": true
+      }
     }
   ],
   "workflowPresets": [
