@@ -20,6 +20,7 @@ namespace appinfo {
 
 export inline constexpr std::string_view name = "@PROJECT_NAME@";
 export inline constexpr std::string_view lowercase_name = "@PROJECT_NAME_LOWER@";
+export inline constexpr std::string_view app_id = "@APP_ID@";
 export inline constexpr std::string_view version_string = "@PROJECT_VERSION@";
 export inline constexpr std::string_view build_date = "@BUILD_DATE@";
 // clang-format off

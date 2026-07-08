@@ -12,8 +12,10 @@ project(
 )
 
 string(TOLOWER "${PROJECT_NAME}" PROJECT_NAME_LOWER)
+set(APP_ID "net.electricbrass.${PROJECT_NAME_LOWER}")
 
-add_library(doomdeck_lib STATIC)
+set(APP_EXE "${PROJECT_NAME_LOWER}")
+set(APP_LIB "${PROJECT_NAME_LOWER}_lib")
 
 include(GetGitInfo)
 string(TIMESTAMP BUILD_DATE "%Y-%m-%d" UTC)
@@ -22,7 +24,9 @@ configure_file(
   appinfo_config.cpp
 )
 
-target_sources(doomdeck_lib
+add_library(${APP_LIB} STATIC)
+
+target_sources(${APP_LIB}
   PUBLIC FILE_SET CXX_MODULES FILES
     src/foo.cpp
     src/desktopfileloader.cpp
@@ -33,15 +37,15 @@ target_sources(doomdeck_lib
     ${CMAKE_CURRENT_BINARY_DIR}/appinfo_config.cpp
 )
 
-add_executable(doomdeck)
+add_executable(${APP_EXE})
 
-target_sources(doomdeck
+target_sources(${APP_EXE}
   PRIVATE
     src/main.cpp
     src/RmlUi_Backend_SDL_SDLrenderer.cpp
 )
 
-target_link_libraries(doomdeck PRIVATE doomdeck_lib)
+target_link_libraries(${APP_EXE} PRIVATE ${APP_LIB})
 
 # TODO: add options for sanitizers: ASan, UBSan, and others
 # probably no need for TSan here
@@ -144,8 +148,12 @@ function(configure_target target)
   )
 endfunction()
 
-configure_target(doomdeck)
-configure_target(doomdeck_lib)
+configure_target(${APP_EXE})
+configure_target(${APP_LIB})
+
+# Enable support for std::stacktrace
+# Currently this forces building with libstdc++
+target_link_libraries(${APP_LIB} PUBLIC stdc++exp)
 
 # TODO: make sure the correct cmake options are set for when building these
 # Add cmake options to force or disable the fetching?
@@ -163,7 +171,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(zlib-ng)
 # TODO: static or shared for this?
-target_link_libraries(doomdeck_lib PUBLIC zlib-ng::zlib)
+target_link_libraries(${APP_LIB} PUBLIC zlib-ng::zlib)
 
 FetchContent_Declare(
   nlohmann_json
@@ -173,7 +181,7 @@ FetchContent_Declare(
   FIND_PACKAGE_ARGS
 )
 FetchContent_MakeAvailable(nlohmann_json)
-target_link_libraries(doomdeck_lib PUBLIC nlohmann_json::nlohmann_json)
+target_link_libraries(${APP_LIB} PUBLIC nlohmann_json::nlohmann_json)
 
 FetchContent_Declare(
   SDL3
@@ -183,7 +191,7 @@ FetchContent_Declare(
   FIND_PACKAGE_ARGS
 )
 FetchContent_MakeAvailable(SDL3)
-target_link_libraries(doomdeck PRIVATE SDL3::SDL3)
+target_link_libraries(${APP_EXE} PRIVATE SDL3::SDL3)
 
 FetchContent_Declare(
   SDL3_image
@@ -193,7 +201,7 @@ FetchContent_Declare(
   FIND_PACKAGE_ARGS
 )
 FetchContent_MakeAvailable(SDL3_image)
-target_link_libraries(doomdeck PRIVATE SDL3_image::SDL3_image)
+target_link_libraries(${APP_EXE} PRIVATE SDL3_image::SDL3_image)
 
 FetchContent_Declare(
   Freetype
@@ -203,7 +211,7 @@ FetchContent_Declare(
   FIND_PACKAGE_ARGS
 )
 FetchContent_MakeAvailable(Freetype)
-target_link_libraries(doomdeck PRIVATE Freetype::Freetype)
+target_link_libraries(${APP_EXE} PRIVATE Freetype::Freetype)
 
 FetchContent_Declare(
   RmlUi
@@ -213,7 +221,7 @@ FetchContent_Declare(
   SYSTEM # suppress warnings on includes
 )
 FetchContent_MakeAvailable(RmlUi)
-target_link_libraries(doomdeck PRIVATE RmlUi::RmlUi)
+target_link_libraries(${APP_EXE} PRIVATE RmlUi::RmlUi)
 
 set(RMLUI_BACKEND_PATH ${RmlUi_SOURCE_DIR}/Backends)
 add_library(rmlui_backend_SDL
@@ -236,7 +244,7 @@ target_compile_definitions(rmlui_backend_SDL
 # )
 target_compile_options(rmlui_backend_SDL PRIVATE "-w")
 target_link_libraries(rmlui_backend_SDL PUBLIC RmlUi::RmlUi)
-target_link_libraries(doomdeck PRIVATE rmlui_backend_SDL)
+target_link_libraries(${APP_EXE} PRIVATE rmlui_backend_SDL)
 
 # TODO: Figure out how install works
 # need to install binary, icons, metainfo, desktop file
@@ -246,14 +254,15 @@ if(BUILD_TESTS)
 
   add_executable(unittest
     test/foo.cpp
+    test/directories.cpp
   )
 
   configure_target(unittest)
 
-  target_link_libraries(unittest PRIVATE doomdeck_lib)
+  target_link_libraries(unittest PRIVATE ${APP_LIB})
   target_link_libraries(unittest PRIVATE Catch2::Catch2WithMain)
 
   include(CTest)
   include(Catch)
-  catch_discover_tests(unittest)
+  catch_discover_tests(unittest ADD_TAGS_AS_LABELS)
 endif()
