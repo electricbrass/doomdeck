@@ -16,7 +16,7 @@ export module errors;
 
 import std;
 
-namespace errors {
+export namespace errors {
 
 class ApplicationError : public std::runtime_error {
 private:
