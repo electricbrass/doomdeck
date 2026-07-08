@@ -12,11 +12,7 @@
  * GNU General Public License for more details.
  */
 
-// #include <RmlUi/Core.h>
-// #include <RmlUi/Core/Core.h>
-// #include <RmlUi_Backend.h>
 #include <SDL3/SDL.h>
-// #include <SDL3/SDL_events.h>
 
 import std;
 import foo;
@@ -24,36 +20,7 @@ import imgui;
 import imgui_impl_sdl3;
 import imgui_impl_sdlgpu3;
 
-namespace {
-// struct ApplicationData {
-//     bool show_text = true;
-//     Rml::String animal = "dog";
-// } my_data;
-
-// void reload(Rml::Context* context, Rml::ElementDocument*& document) {
-//     Rml::Factory::ClearStyleSheetCache();
-//     Rml::Factory::ClearTemplateCache();
-//     document->Hide();
-//     document = context->LoadDocument("src/ui/main.rml");
-//     document->Show();
-//     Rml::Element* element = document->GetElementById("world");
-//     element->SetInnerRML(reinterpret_cast<const char*>(u8"🌍"));
-//     element->SetProperty("font-size", "1.5em");
-//     Rml::Log::Message(Rml::Log::LT_INFO, "reloaded document");
-// }
-
-// Rml::ElementDocument* document = nullptr;
-
-// auto key_handler(Rml::Context* context, Rml::Input::KeyIdentifier key, int key_modifier,
-//                  float /*native_dp_ratio*/, bool /*priority*/) -> bool {
-//     if (key == Rml::Input::KI_R && (key_modifier & Rml::Input::KM_CTRL)) {
-//         reload(context, document);
-//         return false;
-//     }
-//     return true;
-// }
-
-} // namespace
+namespace {} // namespace
 
 auto main() -> int {
     if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD)) {
@@ -256,52 +223,4 @@ auto main() -> int {
     SDL_Quit();
 
     return 0;
-    // const int window_width = 1024;
-    // const int window_height = 768;
-
-    // Backend::Initialize("my cool window", window_width, window_height, true);
-
-    // // Install the custom interfaces.
-    // Rml::SetRenderInterface(Backend::GetRenderInterface());
-    // Rml::SetSystemInterface(Backend::GetSystemInterface());
-
-    // // Now we can initialize RmlUi.
-    // Rml::Initialise();
-
-    // // Create a context to display documents within.
-    // Rml::Context* context = Rml::CreateContext("main", Rml::Vector2i(window_width,
-    // window_height));
-
-    // // Tell RmlUi to load the given fonts.
-    // Rml::LoadFontFace("res/Lato-Regular.ttf");
-    // // Fonts can be registered as fallback fonts, as in this case to display
-    // // emojis.
-    // Rml::LoadFontFace("res/NotoColorEmoji.ttf", true);
-
-    // // Set up data bindings to synchronize application data.
-    // if (Rml::DataModelConstructor constructor = context->CreateDataModel("animals")) {
-    //     constructor.Bind("show_text", &my_data.show_text);
-    //     constructor.Bind("animal", &my_data.animal);
-    // }
-
-    // // Now we are ready to load our document.
-    // // Rml::ElementDocument* document = context->LoadDocument("src/ui/main.rml");
-    // document = context->LoadDocument("src/ui/main.rml");
-    // document->Show();
-
-    // // Replace and style some text in the loaded document.
-    // Rml::Element* element = document->GetElementById("world");
-    // element->SetInnerRML(reinterpret_cast<const char*>(u8"🌍"));
-    // element->SetProperty("font-size", "1.5em");
-
-    // bool exit_application = false;
-    // while (!exit_application) {
-    //     exit_application = !Backend::ProcessEvents(context, key_handler);
-    //     context->Update();
-    //     Backend::BeginFrame();
-    //     context->Render();
-    //     Backend::PresentFrame();
-    // }
-
-    // Rml::Shutdown();
 }
