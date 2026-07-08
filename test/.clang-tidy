@@ -1,0 +1,4 @@
+# yaml-language-server: $schema=https://www.schemastore.org/clang-tidy.json
+---
+Checks: >
+  -misc-use-internal-linkage
