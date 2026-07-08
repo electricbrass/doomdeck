@@ -24,7 +24,7 @@ namespace {} // namespace
 
 auto main() -> int {
     if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD)) {
-        std::printf("Error: SDL_Init(): %s\n", SDL_GetError());
+        std::println("Error: SDL_Init(): {}", SDL_GetError());
         return 1;
     }
 
@@ -36,7 +36,7 @@ auto main() -> int {
         SDL_CreateWindow("Dear ImGui SDL3+SDL_GPU example", static_cast<int>(1280 * main_scale),
                          static_cast<int>(800 * main_scale), window_flags);
     if (window == nullptr) {
-        std::printf("Error: SDL_CreateWindow(): %s\n", SDL_GetError());
+        std::println("Error: SDL_CreateWindow(): {}", SDL_GetError());
         return 1;
     }
     SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
@@ -48,13 +48,13 @@ auto main() -> int {
                                 SDL_GPU_SHADERFORMAT_MSL | SDL_GPU_SHADERFORMAT_METALLIB,
                             true, nullptr);
     if (gpu_device == nullptr) {
-        std::printf("Error: SDL_CreateGPUDevice(): %s\n", SDL_GetError());
+        std::println("Error: SDL_CreateGPUDevice(): {}", SDL_GetError());
         return 1;
     }
 
     // Claim window for GPU Device
     if (!SDL_ClaimWindowForGPUDevice(gpu_device, window)) {
-        std::printf("Error: SDL_ClaimWindowForGPUDevice(): %s\n", SDL_GetError());
+        std::println("Error: SDL_ClaimWindowForGPUDevice(): {}", SDL_GetError());
         return 1;
     }
     SDL_SetGPUSwapchainParameters(gpu_device, window, SDL_GPU_SWAPCHAINCOMPOSITION_SDR,
@@ -64,6 +64,8 @@ auto main() -> int {
     (void)io;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;  // Enable Gamepad Controls
+    io.Fonts->AddFontDefaultVector();
+    io.IniFilename = nullptr;
 
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
