@@ -11,6 +11,7 @@ Checks: >
   -misc-non-private-member-variables-in-classes,
   -misc-no-recursion,
   cppcoreguidelines-*,
+  -cppcoreguidelines-pro-type-vararg,
   google-explicit-constructor,
   google-runtime-int,
   readability-*,
@@ -55,6 +56,9 @@ CheckOptions:
     value: CamelCase
   # Allow `if (pointer)`
   - key: readability-implicit-bool-conversion.AllowPointerConditions
+    value: true
+    # Allow `if (int)`
+  - key: readability-implicit-bool-conversion.AllowIntegerConditions
     value: true
   # Allow leaving off return types for lambdas
   - key: modernize-use-trailing-return-type.TransformLambdas

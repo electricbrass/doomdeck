@@ -5,6 +5,16 @@
         <link type="text/rcss" href="window.rcss" />
     </head>
     <body data-model="animals">
+        <div id="tabs">
+            <button class="tab active" data-tab="presets">Presets</button>
+            <button class="tab" data-tab="wads">WADs</button>
+            <button class="tab" data-tab="ports">Ports</button>
+            <button class="tab" data-tab="settings">Settings</button>
+        </div>
+        <div id="content">
+            <div id="servers-panel">...</div>
+            <div id="settings-panel" class="hidden">...</div>
+        </div>
         <h1>RmlUi</h1>
         <p>Hello <span id="world">world</span>!</p>
         <p data-if="show_text">

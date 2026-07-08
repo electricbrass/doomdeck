@@ -139,7 +139,7 @@ private:
     }
 
 public:
-    DesktopFileLoader() : m_application_dirs(dirs::XdgDirectories().data_dirs()) {}
+    DesktopFileLoader() : m_application_dirs(dirs::Directories().data_search_dirs()) {}
 
     void load() {
         for (const auto& dir : m_application_dirs) {

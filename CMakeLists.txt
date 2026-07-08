@@ -42,7 +42,7 @@ add_executable(${APP_EXE})
 target_sources(${APP_EXE}
   PRIVATE
     src/main.cpp
-    src/RmlUi_Backend_SDL_SDLrenderer.cpp
+    # src/RmlUi_Backend_SDL_SDLrenderer.cpp
 )
 
 target_link_libraries(${APP_EXE} PRIVATE ${APP_LIB})
@@ -193,58 +193,63 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(SDL3)
 target_link_libraries(${APP_EXE} PRIVATE SDL3::SDL3)
 
-FetchContent_Declare(
-  SDL3_image
-  GIT_REPOSITORY https://github.com/libsdl-org/SDL_image.git
-  GIT_TAG release-3.4.4
-  GIT_SHALLOW
-  FIND_PACKAGE_ARGS
-)
-FetchContent_MakeAvailable(SDL3_image)
-target_link_libraries(${APP_EXE} PRIVATE SDL3_image::SDL3_image)
-
-FetchContent_Declare(
-  Freetype
-  GIT_REPOSITORY https://gitlab.freedesktop.org/freetype/freetype
-  GIT_TAG VER-2-14-3
-  GIT_SHALLOW
-  FIND_PACKAGE_ARGS
-)
-FetchContent_MakeAvailable(Freetype)
-target_link_libraries(${APP_EXE} PRIVATE Freetype::Freetype)
-
-FetchContent_Declare(
-  RmlUi
-  GIT_REPOSITORY https://github.com/mikke89/RmlUi
-  GIT_TAG 6.2
-  GIT_SHALLOW
-  SYSTEM # suppress warnings on includes
-)
-FetchContent_MakeAvailable(RmlUi)
-target_link_libraries(${APP_EXE} PRIVATE RmlUi::RmlUi)
-
-set(RMLUI_BACKEND_PATH ${RmlUi_SOURCE_DIR}/Backends)
-add_library(rmlui_backend_SDL
-  OBJECT
-    ${RMLUI_BACKEND_PATH}/RmlUi_Platform_SDL.cpp
-    ${RMLUI_BACKEND_PATH}/RmlUi_Renderer_SDL.cpp
-)
-target_include_directories(rmlui_backend_SDL
-  SYSTEM
-  PUBLIC
-    ${RMLUI_BACKEND_PATH}
-)
-target_compile_definitions(rmlui_backend_SDL
-  PUBLIC
-    RMLUI_SDL_VERSION_MAJOR=3
-)
-# Requires 4.2, and doesn't seem to actually help for Zed
-# set_target_properties(rmlui_backend_SDL PROPERTIES
-#   SKIP_LINTING ON
+# FetchContent_Declare(
+#   SDL3_image
+#   GIT_REPOSITORY https://github.com/libsdl-org/SDL_image.git
+#   GIT_TAG release-3.4.4
+#   GIT_SHALLOW
+#   FIND_PACKAGE_ARGS
 # )
-target_compile_options(rmlui_backend_SDL PRIVATE "-w")
-target_link_libraries(rmlui_backend_SDL PUBLIC RmlUi::RmlUi)
-target_link_libraries(${APP_EXE} PRIVATE rmlui_backend_SDL)
+# FetchContent_MakeAvailable(SDL3_image)
+# target_link_libraries(${APP_EXE} PRIVATE SDL3_image::SDL3_image)
+
+# FetchContent_Declare(
+#   Freetype
+#   GIT_REPOSITORY https://gitlab.freedesktop.org/freetype/freetype
+#   GIT_TAG VER-2-14-3
+#   GIT_SHALLOW
+#   FIND_PACKAGE_ARGS
+# )
+# FetchContent_MakeAvailable(Freetype)
+# target_link_libraries(${APP_EXE} PRIVATE Freetype::Freetype)
+
+# FetchContent_Declare(
+#   RmlUi
+#   GIT_REPOSITORY https://github.com/mikke89/RmlUi
+#   # GIT_TAG 6.2
+#   # some bugs in 6.2...
+#   GIT_COMMIT 2cd28864ae25ed345b70598751703a5433b12356
+#   GIT_SHALLOW
+#   SYSTEM # suppress warnings on includes
+# )
+# FetchContent_MakeAvailable(RmlUi)
+# target_link_libraries(${APP_EXE} PRIVATE RmlUi::RmlUi)
+
+# set(RMLUI_BACKEND_PATH ${RmlUi_SOURCE_DIR}/Backends)
+# add_library(rmlui_backend_SDL
+#   OBJECT
+#     ${RMLUI_BACKEND_PATH}/RmlUi_Platform_SDL.cpp
+#     ${RMLUI_BACKEND_PATH}/RmlUi_Renderer_SDL.cpp
+# )
+# target_include_directories(rmlui_backend_SDL
+#   SYSTEM
+#   PUBLIC
+#     ${RMLUI_BACKEND_PATH}
+# )
+# target_compile_definitions(rmlui_backend_SDL
+#   PUBLIC
+#     RMLUI_SDL_VERSION_MAJOR=3
+# )
+# # Requires 4.2, and doesn't seem to actually help for Zed
+# # set_target_properties(rmlui_backend_SDL PROPERTIES
+# #   SKIP_LINTING ON
+# # )
+# target_compile_options(rmlui_backend_SDL PRIVATE "-w")
+# target_link_libraries(rmlui_backend_SDL PUBLIC RmlUi::RmlUi)
+# target_link_libraries(${APP_EXE} PRIVATE rmlui_backend_SDL)
+
+add_subdirectory(vendored/dearimgui)
+target_link_libraries(${APP_EXE} PRIVATE dearimgui)
 
 # TODO: Figure out how install works
 # need to install binary, icons, metainfo, desktop file

@@ -27,17 +27,23 @@ namespace fs = std::filesystem;
 
 export namespace dirs {
 
-class XdgDirectories {
+class Directories {
 private:
+    static constexpr std::string_view app_subdir = appinfo::lowercase_name;
+    // static constexpr std::string_view app_subdir = appinfo::app_id;
+
     // fs::path m_bin_home;
     fs::path m_cache_home;
     fs::path m_config_home;
     fs::path m_data_home;
     fs::path m_state_home;
     // std::optional<fs::path> m_runtime_dir;
-    std::vector<fs::path> m_system_data_dirs; // xdg_data_dirs
+    std::vector<fs::path> m_data_dirs;
     // std::vector<fs::path> m_system_config_dirs;
-    std::vector<fs::path> m_data_dirs; // xdg_data_dirs + m_xdg_data_home
+    std::vector<fs::path> m_data_search_dirs; // xdg_data_dirs + m_xdg_data_home
+
+    std::optional<fs::path> m_doomwaddir;
+    std::vector<fs::path> m_doomwadpath;
 
     [[nodiscard]]
     static auto home_dir() -> std::optional<fs::path> {
@@ -57,23 +63,44 @@ private:
     }
 
     [[nodiscard]]
-    static auto base_dir(const char* env_var) -> std::optional<fs::path> {
-        fs::path result;
+    static auto load_path(const char* env_var) -> std::optional<fs::path> {
         if (const char* env = std::getenv(env_var)) {
-            result = fs::path(env);
-        } else {
-            return std::nullopt;
+            fs::path path{env};
+            if (!path.empty() && !path.is_relative()) {
+                return path.lexically_normal();
+            }
         }
 
-        if (result.empty() || result.is_relative()) {
-            return std::nullopt;
-        }
+        return std::nullopt;
+    }
 
-        return result.lexically_normal();
+    [[nodiscard]]
+    static auto load_path_list(const char* env_var) -> std::vector<fs::path> {
+        if (const char* env = std::getenv(env_var)) {
+            std::string_view view{env};
+            std::vector<fs::path> dirs;
+            for (const auto dir : std::views::split(view, ':')) {
+                dirs.emplace_back(std::string_view(dir));
+            }
+            return dirs;
+        }
+        return {};
+    }
+
+    static void normalize_path_list(std::vector<fs::path>& paths) {
+        std::unordered_set<fs::path> seen;
+        std::erase_if(paths, [&seen](fs::path& path) {
+            if (path.empty() || path.is_relative()) {
+                return true;
+            }
+
+            path = path.lexically_normal();
+            return !seen.insert(path).second;
+        });
     }
 
 public:
-    XdgDirectories() {
+    Directories() {
         const auto home = home_dir();
         if (!home) {
             throw errors::ApplicationError("User home directory not found");
@@ -83,129 +110,90 @@ public:
             throw errors::ApplicationError("User home directory is relative");
         }
 
-        m_cache_home = base_dir("XDG_CACHE_HOME").value_or(*home / ".cache");
-        m_config_home = base_dir("XDG_CONFIG_HOME").value_or(*home / ".config");
-        m_data_home = base_dir("XDG_DATA_HOME").value_or(*home / ".local/share");
-        m_state_home = base_dir("XDG_STATE_HOME").value_or(*home / ".local/state");
+        m_cache_home = load_path("XDG_CACHE_HOME").value_or(*home / ".cache");
+        m_config_home = load_path("XDG_CONFIG_HOME").value_or(*home / ".config");
+        m_data_home = load_path("XDG_DATA_HOME").value_or(*home / ".local/share");
+        m_state_home = load_path("XDG_STATE_HOME").value_or(*home / ".local/state");
 
-        if (const char* dataDirs = std::getenv("XDG_DATA_DIRS")) {
-            std::string_view view{dataDirs};
-            for (const auto dir : std::views::split(view, ':')) {
-                m_system_data_dirs.emplace_back(std::string_view(dir));
-            }
+        m_data_dirs = load_path_list("XDG_DATA_DIRS");
+        normalize_path_list(m_data_dirs);
+
+        if (m_data_dirs.empty()) {
+            m_data_dirs = {"/usr/local/share", "/usr/share"};
         }
 
-        std::unordered_set<fs::path> seen;
-        std::erase_if(m_system_data_dirs, [&seen](fs::path& dir) {
-            if (dir.is_relative() || dir.empty()) {
-                return true;
-            }
-            dir = dir.lexically_normal();
-            return !seen.insert(dir).second;
-        });
+        m_data_search_dirs.push_back(m_data_home);
 
-        if (m_system_data_dirs.empty()) {
-            m_system_data_dirs = {"/usr/local/share", "/usr/share"};
+        for (const auto& dir : m_data_dirs) {
+            m_data_search_dirs.push_back(dir);
         }
 
-        m_data_dirs.push_back(m_data_home);
+        normalize_path_list(m_data_search_dirs);
 
-        for (const auto& dir : m_system_data_dirs) {
-            m_data_dirs.push_back(dir);
-        }
-
-        seen.clear();
-        std::erase_if(m_data_dirs,
-                      [&seen](const fs::path& dir) { return !seen.insert(dir).second; });
+        m_doomwaddir = load_path("DOOMWADDIR");
+        m_doomwadpath = load_path_list("DOOMWADPATH");
+        normalize_path_list(m_doomwadpath);
     }
 
     [[nodiscard]]
-    auto cache_home() const -> const fs::path& {
+    auto cache_home() const -> fs::path {
         return m_cache_home;
     }
 
     [[nodiscard]]
-    auto config_home() const -> const fs::path& {
+    auto config_home() const -> fs::path {
         return m_config_home;
     }
 
     [[nodiscard]]
-    auto data_home() const -> const fs::path& {
+    auto data_home() const -> fs::path {
         return m_data_home;
     }
 
     [[nodiscard]]
-    auto state_home() const -> const fs::path& {
+    auto state_home() const -> fs::path {
         return m_state_home;
     }
 
     [[nodiscard]]
-    // TODO: should this be std::span<const fs::path> instead?
-    auto system_data_dirs() const -> const std::vector<fs::path>& {
-        return m_system_data_dirs;
+    auto data_dirs() const -> std::vector<fs::path> {
+        return m_data_dirs;
     }
 
     [[nodiscard]]
-    // TODO: should this be std::span<const fs::path> instead?
-    auto data_dirs() const -> const std::vector<fs::path>& {
-        return m_data_dirs;
+    auto data_search_dirs() const -> std::vector<fs::path> {
+        return m_data_search_dirs;
+    }
+
+    [[nodiscard]]
+    auto app_cache() const -> fs::path {
+        return cache_home() / app_subdir;
+    }
+
+    [[nodiscard]]
+    auto app_config() const -> fs::path {
+        return config_home() / app_subdir;
+    }
+
+    [[nodiscard]]
+    auto app_data() const -> fs::path {
+        return data_home() / app_subdir;
+    }
+
+    [[nodiscard]]
+    auto app_state() const -> fs::path {
+        return state_home() / app_subdir;
+    }
+
+    [[nodiscard]]
+    auto doomwaddir() const -> std::optional<fs::path> {
+        return m_doomwaddir;
+    }
+
+    [[nodiscard]]
+    auto doomwadpath() const -> std::vector<fs::path> {
+        return m_doomwadpath;
     }
 };
-
-[[nodiscard]]
-auto app_cache(const XdgDirectories& dirs) -> fs::path {
-    return dirs.cache_home() / appinfo::lowercase_name;
-}
-
-[[nodiscard]]
-auto app_config(const XdgDirectories& dirs) -> fs::path {
-    return dirs.config_home() / appinfo::lowercase_name;
-}
-
-[[nodiscard]]
-auto app_data(const XdgDirectories& dirs) -> fs::path {
-    return dirs.data_home() / appinfo::lowercase_name;
-}
-
-[[nodiscard]]
-auto app_state(const XdgDirectories& dirs) -> fs::path {
-    return dirs.state_home() / appinfo::lowercase_name;
-}
-
-[[nodiscard]]
-auto doomwaddir() -> std::optional<fs::path> {
-    if (const char* waddir = std::getenv("DOOMWADDIR")) {
-        if (*waddir != '\0') {
-            const fs::path path{waddir};
-            if (!path.is_relative()) {
-                return path.lexically_normal();
-            }
-        }
-    }
-    return std::nullopt;
-}
-
-[[nodiscard]]
-auto doomwadpath() -> std::vector<fs::path> {
-    if (const char* wadpath = std::getenv("DOOMWADPATH")) {
-        std::string_view view{wadpath};
-        std::vector<fs::path> dirs;
-        for (const auto dir : std::views::split(view, ':')) {
-            dirs.emplace_back(std::string_view(dir));
-        }
-
-        std::unordered_set<fs::path> seen;
-        std::erase_if(dirs, [&seen](fs::path& dir) {
-            if (dir.is_relative() || dir.empty()) {
-                return true;
-            }
-            dir = dir.lexically_normal();
-            return !seen.insert(dir).second;
-        });
-
-        return dirs;
-    }
-    return {};
-}
 
 } // namespace dirs
