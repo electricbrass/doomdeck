@@ -16,6 +16,7 @@ export module desktopfileloader;
 
 import std;
 import stringutils;
+import directories;
 
 namespace fs = std::filesystem;
 using namespace std::string_view_literals;
@@ -57,7 +58,7 @@ namespace {
 
 export class DesktopFileLoader {
 private:
-    std::vector<fs::path> m_applicationDirs;
+    std::vector<fs::path> m_application_dirs;
 
     struct DesktopFile {
         // should ignore all with type != application
@@ -91,7 +92,7 @@ private:
 
     // TODO: just make this take in a stream or something, so that parsing can be
     // tested from just strings
-    static auto parseFile(std::istream& stream, fs::path path = {})
+    static auto parse_file(std::istream& stream, fs::path path = {})
         -> std::expected<DesktopFile, ParseError> {
         using stringutil::trim;
         using enum ParseError;
@@ -129,20 +130,8 @@ private:
         return file;
     }
 
-    void normalizePaths() {
-        // normalize and deduplicate
-        std::unordered_set<fs::path> seen;
-        std::erase_if(m_applicationDirs, [&seen](fs::path& dir) {
-            if (dir.is_relative()) {
-                return true;
-            }
-            dir = (dir / "applications").lexically_normal();
-            return !seen.insert(dir).second;
-        });
-    }
-
     [[nodiscard]]
-    static auto desktopFileId(const fs::path& base, const fs::path& path) -> std::string {
+    static auto desktop_file_id(const fs::path& base, const fs::path& path) -> std::string {
         const fs::path relative = path.lexically_relative(base).replace_extension();
         std::string result = relative.string();
         std::ranges::replace(result, '/', '-');
@@ -150,37 +139,10 @@ private:
     }
 
 public:
-    DesktopFileLoader() {
-        const char* xdgDataHome = std::getenv("XDG_DATA_HOME");
-        const char* xdgDataDirs = std::getenv("XDG_DATA_DIRS");
-
-        if (xdgDataHome) {
-            m_applicationDirs.emplace_back(xdgDataHome);
-        } else {
-            const char* home = std::getenv("HOME");
-            // TODO: should this be an exception instead?
-            // If so, this should be restructured to be a
-            // static method instead of a constructor
-            if (home) {
-                m_applicationDirs.emplace_back(fs::path(home) / ".local/share");
-            }
-        }
-
-        if (xdgDataDirs) {
-            std::string_view view(xdgDataDirs);
-            for (const auto dir : std::views::split(view, ':')) {
-                m_applicationDirs.emplace_back(std::string_view(dir));
-            }
-        } else {
-            m_applicationDirs.emplace_back("/usr/local/share");
-            m_applicationDirs.emplace_back("/usr/share");
-        }
-
-        normalizePaths();
-    }
+    DesktopFileLoader() : m_application_dirs(dirs::XdgDirectories().data_dirs()) {}
 
     void load() {
-        for (const auto& dir : m_applicationDirs) {
+        for (const auto& dir : m_application_dirs) {
             if (!fs::is_directory(dir)) {
                 // TODO: log error somehow? or just filter?
                 continue;
@@ -202,8 +164,8 @@ public:
                     continue;
                 }
 
-                if (const auto result = parseFile(stream, entry.path())) {
-                    m_parsedFiles[desktopFileId(dir, entry.path())] = *result;
+                if (const auto result = parse_file(stream, entry.path())) {
+                    m_parsedFiles[desktop_file_id(dir, entry.path())] = *result;
                 } else {
                     // log error somehow
                 }
