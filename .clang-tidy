@@ -11,23 +11,48 @@ Checks: >
   -misc-non-private-member-variables-in-classes,
   -misc-no-recursion,
   cppcoreguidelines-*,
-  -cppcoreguidelines-pro-type-vararg,
   google-explicit-constructor,
   google-runtime-int,
   readability-*,
   -readability-identifier-length,
   -readability-qualified-auto,
-  -readability-identifier-naming
+  readability-identifier-naming
 CheckOptions:
-  # currently identifier naming is disabled, havent decided on a style yet
+  # main categories
+  - key: readability-identifier-naming.NamespaceCase
+    value: lower_case
   - key: readability-identifier-naming.FunctionCase
-    value: CamelCase
+    value: lower_case
   - key: readability-identifier-naming.ClassCase
     value: CamelCase
   - key: readability-identifier-naming.StructCase
-    value: snake_case
+    value: CamelCase
+  - key: readability-identifier-naming.EnumCase
+    value: CamelCase
+  - key: readability-identifier-naming.TypedefCase
+    value: CamelCase
+  - key: readability-identifier-naming.TypeAliasCase
+    value: CamelCase
+  - key: readability-identifier-naming.VariableCase
+    value: lower_case
+  - key: readability-identifier-naming.ParameterCase
+    value: lower_case
+  - key: readability-identifier-naming.TemplateParameterCase
+    value: UPPER_CASE
+  # struct/class members
   - key: readability-identifier-naming.MethodCase
-    value: camelBack
+    value: lower_case
+  - key: readability-identifier-naming.MemberCase
+    value: lower_case
+  - key: readability-identifier-naming.PrivateMemberPrefix
+    value: m_
+  - key: readability-identifier-naming.ProtectedMemberPrefix
+    value: m_
+  # enum variants
+  - key: readability-identifier-naming.EnumConstantCase
+    value: UPPER_CASE
+  - key: readability-identifier-naming.ScopedEnumConstantCase
+    value: CamelCase
   # Allow `if (pointer)`
   - key: readability-implicit-bool-conversion.AllowPointerConditions
     value: true
