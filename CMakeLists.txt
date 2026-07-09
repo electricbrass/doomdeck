@@ -28,10 +28,10 @@ add_library(${APP_LIB} STATIC)
 
 target_sources(${APP_LIB}
   PUBLIC FILE_SET CXX_MODULES FILES
-    src/foo.cpp
     src/desktopfileloader.cpp
     src/stringutils.cpp
     src/errors.cpp
+    src/config.cpp
     src/directories.cpp
     src/appinfo.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/appinfo_config.cpp
@@ -42,6 +42,11 @@ add_executable(${APP_EXE})
 target_sources(${APP_EXE}
   PRIVATE
     src/main.cpp
+  PRIVATE FILE_SET CXX_MODULES FILES
+    src/ui/settings.cpp
+    src/ui/types.cpp
+    src/ui/window.cpp
+    src/appstate.cpp
 )
 
 target_link_libraries(${APP_EXE} PRIVATE ${APP_LIB})
@@ -202,7 +207,6 @@ if(BUILD_TESTS)
   find_package(Catch2 3 CONFIG REQUIRED)
 
   add_executable(unittest
-    test/foo.cpp
     test/directories.cpp
   )
 

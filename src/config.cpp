@@ -16,17 +16,20 @@ export module config;
 
 import std;
 
-namespace config {
+export namespace config {
 
 enum struct ThumbnailType { Titlepic, Endoom };
+enum struct ControllerButtons { Steam, Nintendo, Xbox, Playstation };
 
 struct ApplicationSettings {
-    bool start_fullscreen = false;
+    bool fullscreen = false;
+    bool swap_face_buttons = false;
     ThumbnailType thumbnail_type = ThumbnailType::Titlepic;
+    ControllerButtons controller_buttons = ControllerButtons::Steam;
 };
 
 struct Config {
-    static Config load(std::filesystem::path) { return {}; }
+    static auto load(std::filesystem::path) -> Config { return {}; }
     void save(std::filesystem::path) {}
     ApplicationSettings settings;
 };

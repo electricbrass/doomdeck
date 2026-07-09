@@ -87,3 +87,10 @@ we want the all files option to always be available, and if possible we probably
 **licences**
 
 make sure all libraries and fonts are properly attributed
+
+**search dirs**
+
+make sure to search through all of these for each thing:
+- wads: xdg_data_home and xdg_data_dirs, all in doom and games/doom
+- desktop files: xdg_data_home and xdg_data_dirs, applications subdir
+- desktop files created by this program: xdg_data_home/applications/this_app_id

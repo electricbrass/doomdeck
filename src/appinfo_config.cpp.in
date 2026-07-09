@@ -19,10 +19,15 @@ import std;
 namespace appinfo {
 
 export inline constexpr std::string_view name = "@PROJECT_NAME@";
+export inline constexpr const char* name_cstr = "@PROJECT_NAME@";
 export inline constexpr std::string_view lowercase_name = "@PROJECT_NAME_LOWER@";
+export inline constexpr const char* lowercase_name_cstr = "@PROJECT_NAME_LOWER@";
 export inline constexpr std::string_view app_id = "@APP_ID@";
+export inline constexpr const char* app_id_cstr = "@APP_ID@";
 export inline constexpr std::string_view version_string = "@PROJECT_VERSION@";
+export inline constexpr const char* version_string_cstr = "@PROJECT_VERSION@";
 export inline constexpr std::string_view build_date = "@BUILD_DATE@";
+export inline constexpr const char* build_date_cstr = "@BUILD_DATE@";
 // clang-format off
 inline constexpr unsigned int version_major = @PROJECT_VERSION_MAJOR@;
 inline constexpr unsigned int version_minor = @PROJECT_VERSION_MINOR@;
@@ -32,9 +37,13 @@ inline constexpr unsigned int version_patch = @PROJECT_VERSION_PATCH@;
 namespace git {
 
 export inline constexpr std::string_view branch = "@GIT_BRANCH@";
+export inline constexpr const char* branch_cstr = "@GIT_BRANCH@";
 export inline constexpr std::string_view commit = "@GIT_SHORT_HASH@";
+export inline constexpr const char* commit_cstr = "@GIT_SHORT_HASH@";
 export inline constexpr std::string_view commit_full = "@GIT_HASH@";
+export inline constexpr const char* commit_full_cstr = "@GIT_HASH@";
 export inline constexpr std::string_view commit_date = "@GIT_COMMIT_DATE@";
+export inline constexpr const char* commit_date_cstr = "@GIT_COMMIT_DATE@";
 // clang-format off
 export inline constexpr bool is_dirty = @GIT_DIRTY@;
 // clang-format on

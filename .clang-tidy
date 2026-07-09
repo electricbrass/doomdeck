@@ -17,7 +17,7 @@ Checks: >
   readability-*,
   -readability-identifier-length,
   -readability-qualified-auto,
-  readability-identifier-naming
+  -readability-uppercase-literal-suffix,
 CheckOptions:
   # main categories
   - key: readability-identifier-naming.NamespaceCase

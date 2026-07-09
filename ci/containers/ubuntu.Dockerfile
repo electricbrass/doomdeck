@@ -1,4 +1,7 @@
 FROM ubuntu:26.04
+# or should this be
+# FROM gcc:trixie
+# if so, I'll need to get a newer cmake somehow
 ARG TARGETARCH
 
 RUN apt-get update && apt-get install -y \

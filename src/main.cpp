@@ -15,26 +15,87 @@
 #include <SDL3/SDL.h>
 
 import std;
-import foo;
 import imgui;
 import imgui_impl_sdl3;
 import imgui_impl_sdlgpu3;
 
-namespace {} // namespace
+import appinfo;
+import appstate;
+import config;
+import directories;
+import ui.window;
+import ui.types;
+
+namespace {
+
+auto handle_event(SDL_Event event, ApplicationState& state) -> bool {
+    const auto toggle_fullscreen = [&]() {
+        if (!SDL_SetWindowFullscreen(state.window, !state.config.settings.fullscreen)) {
+            // TODO: log error
+        } else {
+            state.config.settings.fullscreen = !state.config.settings.fullscreen;
+        }
+    };
+    // NOLINTNEXTLINE(bugprone-switch-missing-default-case)
+    switch (event.type) {
+        case SDL_EVENT_QUIT:
+            return true;
+            break;
+        case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
+            if (event.window.windowID == SDL_GetWindowID(state.window)) {
+                return true;
+            }
+            break;
+        case SDL_EVENT_KEY_DOWN:
+            // if (io.WantCaptureKeyboard) {
+            //     break;
+            // }
+            if (!event.key.repeat) {
+                // NOLINTNEXTLINE(bugprone-switch-missing-default-case)
+                switch (event.key.key) {
+                    case SDLK_ESCAPE:
+                        return true;
+                        break;
+                    case SDLK_F11:
+                        toggle_fullscreen();
+                        break;
+                    case SDLK_RETURN:
+                        if (event.key.mod & SDL_KMOD_ALT) {
+                            toggle_fullscreen();
+                        }
+                        break;
+                }
+            }
+            break;
+        case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
+            switch (event.gbutton.button) {
+                case SDL_GAMEPAD_BUTTON_LEFT_SHOULDER:
+                    state.current_tab = ui::prev_tab(state.current_tab);
+                    break;
+                case SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER:
+                    state.current_tab = ui::next_tab(state.current_tab);
+                    break;
+            }
+            break;
+    }
+    return false;
+}
+
+} // namespace
 
 auto main() -> int {
+    SDL_SetHintWithPriority(SDL_HINT_APP_ID, appinfo::app_id_cstr, SDL_HINT_OVERRIDE);
     if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD)) {
         std::println("Error: SDL_Init(): {}", SDL_GetError());
         return 1;
     }
 
-    // Create SDL window graphics context
-    float main_scale = SDL_GetDisplayContentScale(SDL_GetPrimaryDisplay());
+    const float window_scale = SDL_GetDisplayContentScale(SDL_GetPrimaryDisplay());
+    const float main_scale = window_scale * 2;
     SDL_WindowFlags window_flags =
         SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN | SDL_WINDOW_HIGH_PIXEL_DENSITY;
-    SDL_Window* window =
-        SDL_CreateWindow("Dear ImGui SDL3+SDL_GPU example", static_cast<int>(1280 * main_scale),
-                         static_cast<int>(800 * main_scale), window_flags);
+    SDL_Window* window = SDL_CreateWindow(appinfo::name_cstr, static_cast<int>(1280 * window_scale),
+                                          static_cast<int>(800 * window_scale), window_flags);
     if (window == nullptr) {
         std::println("Error: SDL_CreateWindow(): {}", SDL_GetError());
         return 1;
@@ -42,7 +103,6 @@ auto main() -> int {
     SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
     SDL_ShowWindow(window);
 
-    // Create GPU Device
     SDL_GPUDevice* gpu_device =
         SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV | SDL_GPU_SHADERFORMAT_DXIL |
                                 SDL_GPU_SHADERFORMAT_MSL | SDL_GPU_SHADERFORMAT_METALLIB,
@@ -52,66 +112,54 @@ auto main() -> int {
         return 1;
     }
 
-    // Claim window for GPU Device
     if (!SDL_ClaimWindowForGPUDevice(gpu_device, window)) {
         std::println("Error: SDL_ClaimWindowForGPUDevice(): {}", SDL_GetError());
         return 1;
     }
     SDL_SetGPUSwapchainParameters(gpu_device, window, SDL_GPU_SWAPCHAINCOMPOSITION_SDR,
                                   SDL_GPU_PRESENTMODE_VSYNC);
+    ImGui::CheckVersion();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
-    (void)io;
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;  // Enable Gamepad Controls
+    // io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
     io.Fonts->AddFontDefaultVector();
     io.IniFilename = nullptr;
+    io.LogFilename = nullptr;
 
-    // Setup Dear ImGui style
+    // set up style
     ImGui::StyleColorsDark();
     ImGuiStyle& style = ImGui::GetStyle();
-    style.ScaleAllSizes(
-        main_scale); // Bake a fixed style scale. (until we have a solution for dynamic style
-                     // scaling, changing this requires resetting Style + calling this again)
+    style.ScaleAllSizes(main_scale);
     style.FontScaleDpi = main_scale;
+    static constexpr float corner_rounding = 6.0f;
+    style.WindowRounding = corner_rounding;
+    style.ChildRounding = corner_rounding;
+    style.FrameRounding = corner_rounding;
+    style.PopupRounding = corner_rounding;
+    style.GrabRounding = corner_rounding;
     ImGui_ImplSDL3_InitForSDLGPU(window);
-    ImGui_ImplSDLGPU3_InitInfo init_info = {};
-    init_info.Device = gpu_device;
-    init_info.ColorTargetFormat = SDL_GetGPUSwapchainTextureFormat(gpu_device, window);
-    init_info.MSAASamples = SDL_GPU_SAMPLECOUNT_1; // Only used in multi-viewports mode.
-    init_info.SwapchainComposition =
-        SDL_GPU_SWAPCHAINCOMPOSITION_SDR; // Only used in multi-viewports mode.
-    init_info.PresentMode = SDL_GPU_PRESENTMODE_VSYNC;
+    ImGui_ImplSDLGPU3_InitInfo init_info = {
+        .Device = gpu_device,
+        .ColorTargetFormat = SDL_GetGPUSwapchainTextureFormat(gpu_device, window),
+    };
     ImGui_ImplSDLGPU3_Init(&init_info);
-    bool show_demo_window = true;
-    bool show_another_window = false;
-    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+    const dirs::Directories dirs{};
+    ApplicationState state;
+    state.config = config::Config::load("");
+    state.window = window;
+    io.ConfigNavSwapGamepadButtons = state.config.settings.swap_face_buttons;
 
-    // Main loop
+    // main loop
     bool done = false;
     while (!done) {
-        // Poll and handle events (inputs, window resize, etc.)
-        // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui
-        // wants to use your inputs.
-        // - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main
-        // application, or clear/overwrite your copy of the mouse data.
-        // - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main
-        // application, or clear/overwrite your copy of the keyboard data. Generally you may always
-        // pass all inputs to dear imgui, and hide them from your application based on those two
-        // flags. [If using SDL_MAIN_USE_CALLBACKS: call ImGui_ImplSDL3_ProcessEvent() from your
-        // SDL_AppEvent() function]
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
             ImGui_ImplSDL3_ProcessEvent(&event);
-            if (event.type == SDL_EVENT_QUIT)
-                done = true;
-            if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED &&
-                event.window.windowID == SDL_GetWindowID(window))
-                done = true;
+            done |= handle_event(event, state);
         }
 
-        // [If using SDL_MAIN_USE_CALLBACKS: all code below would likely be your SDL_AppIterate()
-        // function]
+        // skip when minimized
         if (SDL_GetWindowFlags(window) & SDL_WINDOW_MINIMIZED) {
             SDL_Delay(10);
             continue;
@@ -122,98 +170,68 @@ auto main() -> int {
         ImGui_ImplSDL3_NewFrame();
         ImGui::NewFrame();
 
-        // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You
-        // can browse its code to learn more about Dear ImGui!).
-        if (show_demo_window)
-            ImGui::ShowDemoWindow(&show_demo_window);
-
-        // 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a
-        // named window.
+        // main gui
         {
-            static float f = 0.0f;
-            static int counter = 0;
+            const ImGuiViewport* viewport = ImGui::GetMainViewport();
 
-            ImGui::Begin(
-                "Hello, world!"); // Create a window called "Hello, world!" and append into it.
+            ImGui::SetNextWindowPos(viewport->Pos);
+            ImGui::SetNextWindowSize(viewport->Size);
 
-            ImGui::Text("This is some useful text."); // Display some text (you can use a format
-                                                      // strings too)
-            ImGui::Checkbox("Demo Window",
-                            &show_demo_window); // Edit bools storing our window open/close state
-            ImGui::Checkbox("Another Window", &show_another_window);
+            const ImGuiWindowFlags flags = ImGuiWindowFlags_NoDecoration |
+                                           ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
+                                           ImGuiWindowFlags_NoBringToFrontOnFocus |
+                                           ImGuiWindowFlags_NoBackground;
+            ImGui::Begin("Main Window", nullptr, flags);
 
-            ImGui::SliderFloat("float", &f, 0.0f,
-                               1.0f); // Edit 1 float using a slider from 0.0f to 1.0f
-            ImGui::ColorEdit3(
-                "clear color",
-                reinterpret_cast<float*>(&clear_color)); // Edit 3 floats representing a color
+            done |= ui::draw_window(state);
 
-            if (ImGui::Button("Button")) // Buttons return true when clicked (most widgets return
-                                         // true when edited/activated)
-                counter++;
-            ImGui::SameLine();
-            ImGui::Text("counter = %d", counter);
-
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate,
-                        io.Framerate);
             ImGui::End();
         }
 
-        // 3. Show another simple window.
-        if (show_another_window) {
-            ImGui::Begin(
-                "Another Window",
-                &show_another_window); // Pass a pointer to our bool variable (the window will have
-                                       // a closing button that will clear the bool when clicked)
-            ImGui::Text("Hello from another window!");
-            if (ImGui::Button("Close Me"))
-                show_another_window = false;
-            ImGui::End();
+        if (state.show_demo_window) {
+            ImGui::ShowDemoWindow(&state.show_demo_window);
         }
 
-        // Rendering
         ImGui::Render();
         ImDrawData* draw_data = ImGui::GetDrawData();
         const bool is_minimized =
             (draw_data->DisplaySize.x <= 0.0f || draw_data->DisplaySize.y <= 0.0f);
 
-        SDL_GPUCommandBuffer* command_buffer =
-            SDL_AcquireGPUCommandBuffer(gpu_device); // Acquire a GPU command buffer
+        SDL_GPUCommandBuffer* command_buffer = SDL_AcquireGPUCommandBuffer(gpu_device);
 
-        SDL_GPUTexture* swapchain_texture;
+        SDL_GPUTexture* swapchain_texture = nullptr;
         SDL_WaitAndAcquireGPUSwapchainTexture(command_buffer, window, &swapchain_texture, nullptr,
-                                              nullptr); // Acquire a swapchain texture
+                                              nullptr);
 
         if (swapchain_texture != nullptr && !is_minimized) {
-            // This is mandatory: call ImGui_ImplSDLGPU3_PrepareDrawData() to upload the
+            // this is mandatory: call ImGui_ImplSDLGPU3_PrepareDrawData() to upload the
             // vertex/index buffer!
             ImGui_ImplSDLGPU3_PrepareDrawData(draw_data, command_buffer);
 
-            // Setup and start a render pass
+            ImVec4 clear_color = ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
+
+            // set up and start a render pass
             SDL_GPUColorTargetInfo target_info = {};
             target_info.texture = swapchain_texture;
-            target_info.clear_color =
-                SDL_FColor{clear_color.x, clear_color.y, clear_color.z, clear_color.w};
-            target_info.load_op = SDL_GPU_LOADOP_CLEAR;
-            target_info.store_op = SDL_GPU_STOREOP_STORE;
             target_info.mip_level = 0;
             target_info.layer_or_depth_plane = 0;
+            target_info.clear_color = SDL_FColor{
+                .r = clear_color.x, .g = clear_color.y, .b = clear_color.z, .a = clear_color.w};
+            target_info.load_op = SDL_GPU_LOADOP_CLEAR;
+            target_info.store_op = SDL_GPU_STOREOP_STORE;
             target_info.cycle = false;
             SDL_GPURenderPass* render_pass =
                 SDL_BeginGPURenderPass(command_buffer, &target_info, 1, nullptr);
 
-            // Render ImGui
             ImGui_ImplSDLGPU3_RenderDrawData(draw_data, command_buffer, render_pass);
 
             SDL_EndGPURenderPass(render_pass);
         }
 
-        // Submit the command buffer
         SDL_SubmitGPUCommandBuffer(command_buffer);
     }
 
-    // Cleanup
-    // [If using SDL_MAIN_USE_CALLBACKS: all code below would likely be your SDL_AppQuit() function]
+    // cleanup
     SDL_WaitForGPUIdle(gpu_device);
     ImGui_ImplSDL3_Shutdown();
     ImGui_ImplSDLGPU3_Shutdown();
