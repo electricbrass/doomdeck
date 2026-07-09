@@ -28,7 +28,6 @@ target_compile_definitions(dearimgui
   PUBLIC
     IMGUI_DISABLE_OBSOLETE_FUNCTIONS
     IMGUI_ENABLE_FREETYPE
-    IMGUI_ENABLE_STB_TRUETYPE
 )
 
 target_compile_features(dearimgui
