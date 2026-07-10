@@ -23,9 +23,9 @@ private:
     std::stacktrace m_stacktrace;
 
 public:
-    template <typename... Args>
-    explicit ApplicationError(std::format_string<Args...> fmt, Args&&... args)
-        : std::runtime_error(std::format(fmt, std::forward<Args>(args)...)),
+    template <typename... ARGS>
+    explicit ApplicationError(std::format_string<ARGS...> fmt, ARGS&&... args)
+        : std::runtime_error(std::format(fmt, std::forward<ARGS>(args)...)),
           m_stacktrace(std::stacktrace::current(1)) {}
 
     explicit ApplicationError(const std::string& message)
