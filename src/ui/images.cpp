@@ -71,7 +71,7 @@ public:
     TextureLoader(TextureLoader&&) = delete;
     auto operator=(TextureLoader&&) -> TextureLoader& = delete;
 
-    // TODO: better error handling here, check if there's cleanup that needs doing
+    // TODO: better error handling here
     // maybe return std::expected instead of optional?
     auto load_texture(std::span<const std::uint8_t> data) -> std::optional<TextureData> {
         using std::experimental::scope_exit;
@@ -138,6 +138,8 @@ public:
             return std::nullopt;
         }
 
+        scope_exit cancel_command_buffer([&] { SDL_CancelGPUCommandBuffer(cmd); });
+
         SDL_GPUCopyPass* copy_pass = SDL_BeginGPUCopyPass(cmd);
         if (!copy_pass) {
             return std::nullopt;
@@ -150,6 +152,7 @@ public:
         }
 
         release_texture.release();
+        cancel_command_buffer.release();
 
         return std::make_optional(
             TextureData{.texture = texture, .height = height, .width = width}
