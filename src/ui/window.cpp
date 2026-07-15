@@ -76,7 +76,7 @@ void draw_header(icons::ControllerType controller, image::TextureManager& textur
     const auto height = ImGui::GetFrameHeight();
 
     const float spacing =
-        ImGui::GetStyle().ItemSpacing.x * 3 + ImGui::GetStyle().FramePadding.x * 2;
+        (ImGui::GetStyle().ItemSpacing.x * 3) + (ImGui::GetStyle().FramePadding.x * 2);
     const float text_width = ImGui::CalcTextSize("Prev Tab").x + ImGui::CalcTextSize("Next Tab").x;
     const float group_width = (ImGui::GetFrameHeight() * 2) + spacing + text_width;
     ImGui::SameLine();
@@ -160,7 +160,7 @@ void draw_footer(
     // TODO: make sure this calculation is correct
     // and only draw if currently using a controller
     const float spacing =
-        ImGui::GetStyle().ItemSpacing.x * 3 + ImGui::GetStyle().FramePadding.x * 2;
+        (ImGui::GetStyle().ItemSpacing.x * 3) + (ImGui::GetStyle().FramePadding.x * 2);
     const float text_width = ImGui::CalcTextSize("Select").x + ImGui::CalcTextSize("Cancel").x;
     const float group_width = (ImGui::GetFrameHeight() * 2) + spacing + text_width;
     ImGui::SameLine();

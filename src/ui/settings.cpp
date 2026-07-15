@@ -124,6 +124,8 @@ export void settings_tab(ApplicationState& state) {
         ImGui::EndCombo();
     }
 
+    ImGui::Checkbox("Close on Launch", &state.config.settings.close_on_launch);
+
     ImGui::EndChild();
 
     ImGui::SameLine();

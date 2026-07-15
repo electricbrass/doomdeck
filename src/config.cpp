@@ -25,6 +25,7 @@ using icons::ControllerType;
 struct ApplicationSettings {
     bool fullscreen = false;
     bool swap_face_buttons = false;
+    bool close_on_launch = false;
     ThumbnailType thumbnail_type = ThumbnailType::Titlepic;
     ControllerType controller_type = ControllerType::Steam;
 };
