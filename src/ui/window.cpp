@@ -30,14 +30,74 @@ import ui.types;
 
 namespace ui {
 
-void draw_header() {
-    ImGui::TextUnformatted("DoomDeck");
+namespace {
+
+void draw_controller_prompt(
+    icons::ControllerButton button, std::string_view text, icons::ControllerType controller,
+    image::TextureManager& texture_manager
+) {
+    const icons::Atlas* atlas = nullptr;
+    switch (controller) {
+        case icons::ControllerType::Steam:
+            atlas = &icons::steam_atlas;
+            break;
+        case icons::ControllerType::Nintendo:
+            atlas = &icons::nintendo_atlas;
+            break;
+        case icons::ControllerType::Xbox:
+            atlas = &icons::xbox_atlas;
+            break;
+        case icons::ControllerType::Playstation:
+            atlas = &icons::playstation_atlas;
+            break;
+    }
+    ImGui::BeginGroup();
+    if (auto tex = texture_manager.get_controller_texture(controller)) {
+        const auto icon = (*atlas)[button];
+        const auto height = ImGui::GetFrameHeight();
+
+        ImGui::Image(*tex, {height, height}, {icon.x0, icon.y0}, {icon.x1, icon.y1});
+    }
+
+    ImGui::SameLine();
+    ImGui::TextUnformatted(text.begin(), text.end());
+    ImGui::EndGroup();
+}
+
+} // namespace
+
+void draw_header(icons::ControllerType controller, image::TextureManager& texture_manager) {
+    ImGui::TextUnformatted(appinfo::name_cstr);
 
     ImGui::SameLine();
 
     ImGui::TextDisabled(appinfo::version_string_cstr);
 
-    // TODO: draw controller icons for L + R indicating the tabs
+    const auto height = ImGui::GetFrameHeight();
+
+    const float spacing =
+        ImGui::GetStyle().ItemSpacing.x * 3 + ImGui::GetStyle().FramePadding.x * 2;
+    const float text_width = ImGui::CalcTextSize("Prev Tab").x + ImGui::CalcTextSize("Next Tab").x;
+    const float group_width = (ImGui::GetFrameHeight() * 2) + spacing + text_width;
+    ImGui::SameLine();
+
+    const float right_edge = ImGui::GetContentRegionAvail().x;
+    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + right_edge - group_width);
+
+    // TODO: figure out how to avoid needing to do this
+    const float y = ImGui::GetCursorPosY() + ((ImGui::GetItemRectSize().y - height) * 0.5f);
+    ImGui::SetCursorPosY(y);
+
+    draw_controller_prompt(
+        icons::ControllerButton::LeftShoulder, "Prev Tab", controller, texture_manager
+    );
+
+    ImGui::SameLine();
+    ImGui::SetCursorPosY(y);
+
+    draw_controller_prompt(
+        icons::ControllerButton::RightShoulder, "Next Tab", controller, texture_manager
+    );
 }
 
 struct TabInfo {
@@ -107,71 +167,26 @@ void draw_footer(
 
     const float right_edge = ImGui::GetContentRegionAvail().x;
     ImGui::SetCursorPosX(ImGui::GetCursorPosX() + right_edge - group_width);
-    // ImGui::SameLine();
 
-    const icons::Atlas* idk;
-    switch (controller) {
-        case icons::ControllerType::Steam:
-            idk = &icons::steam_atlas;
-            break;
-        case icons::ControllerType::Nintendo:
-            idk = &icons::nintendo_atlas;
-            break;
-        case icons::ControllerType::Xbox:
-            idk = &icons::xbox_atlas;
-            break;
-        case icons::ControllerType::Playstation:
-            idk = &icons::playstation_atlas;
-            break;
-    }
+    draw_controller_prompt(
+        ImGui::GetIO().ConfigNavSwapGamepadButtons ? icons::ControllerButton::FaceRight
+                                                   : icons::ControllerButton::FaceBottom,
+        "Select", controller, texture_manager
+    );
 
-    // if (auto tex = image::load_image(idk->png, gpu_device)) {
-    if (auto tex = texture_manager.get_controller_texture(controller)) {
-        // if (false) {
-        constexpr int icon_size = 128;
-        auto icon = (*idk)
-            [ImGui::GetIO().ConfigNavSwapGamepadButtons ? icons::ControllerButton::FaceRight
-                                                        : icons::ControllerButton::FaceBottom];
-        ImVec2 uv0;
-        ImVec2 uv1;
-        uv0.x = float(icon.x) / idk->width;
-        uv0.y = float(idk->height - icon.y - icon_size) / idk->height;
-        uv1.x = float(icon.x + icon_size) / idk->width;
-        uv1.y = float(idk->height - icon.y) / idk->height;
-        auto height = ImGui::GetFrameHeight();
+    ImGui::SameLine();
 
-        ImGui::Image(*tex, {height, height}, uv0, uv1);
-    }
-    ImGui::SameLine();
-    ImGui::TextUnformatted("Select");
-    ImGui::SameLine();
-    ImGui::Spacing();
-    ImGui::SameLine();
-    // if (auto tex = image::load_image(idk->png, gpu_device)) {
-    if (auto tex = texture_manager.get_controller_texture(controller)) {
-        // if (false) {
-        constexpr int icon_size = 128;
-        auto icon = (*idk)
-            [ImGui::GetIO().ConfigNavSwapGamepadButtons ? icons::ControllerButton::FaceBottom
-                                                        : icons::ControllerButton::FaceRight];
-        ImVec2 uv0;
-        ImVec2 uv1;
-        uv0.x = float(icon.x) / idk->width;
-        uv0.y = float(idk->height - icon.y - icon_size) / idk->height;
-        uv1.x = float(icon.x + icon_size) / idk->width;
-        uv1.y = float(idk->height - icon.y) / idk->height;
-        auto height = ImGui::GetFrameHeight();
-
-        ImGui::Image(*tex, {height, height}, uv0, uv1);
-    }
-    ImGui::SameLine();
-    ImGui::TextUnformatted("Cancel");
+    draw_controller_prompt(
+        ImGui::GetIO().ConfigNavSwapGamepadButtons ? icons::ControllerButton::FaceBottom
+                                                   : icons::ControllerButton::FaceRight,
+        "Cancel", controller, texture_manager
+    );
 }
 
-export bool draw_window(ApplicationState& state) {
+export auto draw_window(ApplicationState& state) -> bool {
     bool should_quit = false;
 
-    draw_header();
+    draw_header(state.config.settings.controller_type, state.texture_manager);
 
     draw_tabs(state.current_tab);
 

@@ -62,23 +62,54 @@ export enum struct ControllerButton {
 // current coordinates are for fill only
 export struct Atlas {
     static constexpr int icon_size = 128;
-    struct Coords {
-        int x, y;
+    struct UVCoords {
+        float x0, y0, x1, y1;
     };
     std::span<const std::uint8_t> png;
     int width, height;
-    std::array<Coords, static_cast<std::size_t>(ControllerButton::FaceRight) + 1> coords;
-    constexpr auto operator[](ControllerButton button) const -> Coords {
+    std::array<UVCoords, static_cast<std::size_t>(ControllerButton::FaceRight) + 1> coords;
+    constexpr auto operator[](ControllerButton button) const -> UVCoords {
         return coords.at(static_cast<std::size_t>(button));
     }
 };
+
+namespace {
+
+struct Coords {
+    int x, y;
+};
+
+// TODO: maybe move this to Atlas constructor
+// would reduce duplication of width and height
+// also it doesn't really need to be templated,
+// the length is always the number of ControllerButton variants
+template <std::size_t N>
+consteval auto make_coords(const int width, const int height, const std::array<Coords, N>& coords)
+    -> std::array<Atlas::UVCoords, N> {
+    std::array<Atlas::UVCoords, N> result{};
+
+    for (auto&& [out, in] : std::views::zip(result, coords)) {
+        const auto [x, y] = in;
+
+        out = {
+            .x0 = static_cast<float>(x) / static_cast<float>(width),
+            .y0 = static_cast<float>(height - y - Atlas::icon_size) / static_cast<float>(height),
+            .x1 = static_cast<float>(x + Atlas::icon_size) / static_cast<float>(width),
+            .y1 = static_cast<float>(height - y) / static_cast<float>(height),
+        };
+    }
+
+    return result;
+}
+
+} // namespace
 
 // clang-format off
 export constexpr Atlas steam_atlas{
     .png = steam_png,
     .width = 1408,
     .height = 1408,
-    .coords = {{
+    .coords = make_coords(1408, 1408, std::to_array<Coords>({
         {.x = 896,  .y = 0  }, // L1
         {.x = 1024, .y = 128}, // R1
         {.x = 1152, .y = 0  }, // L2
@@ -87,14 +118,14 @@ export constexpr Atlas steam_atlas{
         {.x = 128,  .y = 0  }, // A
         {.x = 896,  .y = 256}, // X
         {.x = 384,  .y = 0  }, // B
-    }}
+    }))
 };
 
 export constexpr Atlas nintendo_atlas{
     .png = nintendo_png,
     .width = 1536,
     .height = 1408,
-    .coords = {{
+    .coords = make_coords(1536, 1408, std::to_array<Coords>({
         {.x = 512,  .y = 128}, // L
         {.x = 1280, .y = 128}, // R
         {.x = 1280, .y = 256}, // ZL
@@ -103,14 +134,14 @@ export constexpr Atlas nintendo_atlas{
         {.x = 768,  .y = 0  }, // B
         {.x = 1024, .y = 256}, // Y
         {.x = 512,  .y = 0  }, // A
-    }}
+    }))
 };
 
 export constexpr Atlas playstation_atlas{
     .png = playstation_png,
     .width = 1536,
     .height = 1536,
-    .coords = {{
+    .coords = make_coords(1536, 1536, std::to_array<Coords>({
         {.x = 384,  .y = 640}, // L1
         {.x = 1408, .y = 640}, // R1
         {.x = 896,  .y = 640}, // L2
@@ -119,14 +150,14 @@ export constexpr Atlas playstation_atlas{
         {.x = 1408, .y = 0  }, // Cross
         {.x = 128,  .y = 128}, // Square
         {.x = 1152, .y = 0  }, // Circle
-    }}
+    }))
 };
 
 export constexpr Atlas xbox_atlas{
     .png = xbox_png,
     .width = 1280,
     .height = 1280,
-    .coords = {{
+    .coords = make_coords(1280, 1280, std::to_array<Coords>({
         {.x = 896,  .y = 768}, // LB
         {.x = 384,  .y = 896}, // RB
         {.x = 128,  .y = 896}, // LT
@@ -135,7 +166,7 @@ export constexpr Atlas xbox_atlas{
         {.x = 256,  .y = 128}, // A
         {.x = 768,  .y = 128}, // X
         {.x = 512,  .y = 128}, // B
-    }}
+    }))
 };
 // clang-format on
 
