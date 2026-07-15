@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=@PROJECT_NAME@
+Exec=@PROJECT_NAME_LOWER@
+Type=Application
+Categories=Game;
+Keywords=Doom;Launcher;
+StartupWMClass=@APP_ID@
+Terminal=false
+Icon=@APP_ID@
+Comment=Launcher for Doom engine games

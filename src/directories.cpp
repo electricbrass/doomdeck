@@ -103,11 +103,11 @@ public:
     Directories() {
         const auto home = home_dir();
         if (!home) {
-            throw errors::ApplicationError("User home directory not found");
+            throw errors::RuntimeError("User home directory not found");
         }
 
         if (home->is_relative()) {
-            throw errors::ApplicationError("User home directory is relative");
+            throw errors::RuntimeError("User home directory is relative");
         }
 
         m_cache_home = load_path("XDG_CACHE_HOME").value_or(*home / ".cache");

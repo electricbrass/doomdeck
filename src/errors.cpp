@@ -18,26 +18,30 @@ import std;
 
 export namespace errors {
 
-class ApplicationError : public std::runtime_error {
+template <typename EXCEPTION>
+class ErrorWithStacktrace : public EXCEPTION {
 private:
     std::stacktrace m_stacktrace;
 
 public:
     template <typename... ARGS>
-    explicit ApplicationError(std::format_string<ARGS...> fmt, ARGS&&... args)
-        : std::runtime_error(std::format(fmt, std::forward<ARGS>(args)...)),
+    explicit ErrorWithStacktrace(std::format_string<ARGS...> fmt, ARGS&&... args)
+        : EXCEPTION(std::format(fmt, std::forward<ARGS>(args)...)),
           m_stacktrace(std::stacktrace::current(1)) {}
 
-    explicit ApplicationError(const std::string& message)
-        : std::runtime_error(message), m_stacktrace(std::stacktrace::current(1)) {}
+    explicit ErrorWithStacktrace(const std::string& message)
+        : EXCEPTION(message), m_stacktrace(std::stacktrace::current(1)) {}
 
-    explicit ApplicationError(const char* message)
-        : std::runtime_error(message), m_stacktrace(std::stacktrace::current(1)) {}
+    explicit ErrorWithStacktrace(const char* message)
+        : EXCEPTION(message), m_stacktrace(std::stacktrace::current(1)) {}
 
     [[nodiscard]]
     auto stacktrace() const noexcept -> const std::stacktrace& {
         return m_stacktrace;
     }
 };
+
+using RuntimeError = ErrorWithStacktrace<std::runtime_error>;
+using LogicError = ErrorWithStacktrace<std::logic_error>;
 
 } // namespace errors

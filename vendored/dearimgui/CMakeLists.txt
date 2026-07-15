@@ -16,12 +16,9 @@ target_sources(dearimgui
     modules/imgui_internal.cppm
     modules/imgui_impl_sdl3.cppm
     modules/imgui_impl_sdlgpu3.cppm
-)
-
-target_include_directories(dearimgui PUBLIC
-  include
-  src/misc/freetype
-  SYSTEM
+  PUBLIC FILE_SET HEADERS BASE_DIRS
+    include
+    src/misc/freetype
 )
 
 target_compile_definitions(dearimgui

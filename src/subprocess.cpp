@@ -12,23 +12,8 @@
  * GNU General Public License for more details.
  */
 
-export module ui.types;
+module;
 
-import std;
+#include <spawn.h>
 
-export namespace ui {
-
-// TODO: should this go in appstate instead?
-enum struct Tab { Launcher, Pwads, Iwads, Ports, Settings };
-
-constexpr auto next_tab(Tab current) -> Tab {
-    return static_cast<Tab>(
-        std::min(std::to_underlying(current) + 1, std::to_underlying(Tab::Settings))
-    );
-}
-
-constexpr auto prev_tab(Tab current) -> Tab {
-    return static_cast<Tab>(std::max(std::to_underlying(current) - 1, 0));
-}
-
-} // namespace ui
+export module subprocess;

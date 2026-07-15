@@ -11,4 +11,9 @@ AlignArrayOfStructures: Left
 ColumnLimit: 100
 BreakConstructorInitializers: BeforeColon
 IndentCaseLabels: true
+BreakTemplateDeclarations: Yes
+BreakAfterOpenBracketFunction: true
+BreakBeforeCloseBracketFunction: true
+BreakAfterOpenBracketBracedList: true
+BreakBeforeCloseBracketBracedList: true
 ---

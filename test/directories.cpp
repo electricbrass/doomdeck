@@ -54,7 +54,7 @@ TEST_CASE_METHOD(DirectoriesTestFixture, "Reject relative paths", "[directories]
                                      "/absolute/again"}));
 
     setenv("HOME", "relative", 1);
-    REQUIRE_THROWS_AS(dirs::Directories(), errors::ApplicationError);
+    REQUIRE_THROWS_AS(dirs::Directories(), errors::RuntimeError);
 }
 
 TEST_CASE_METHOD(DirectoriesTestFixture, "Reject empty paths", "[directories]") {

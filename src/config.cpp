@@ -15,17 +15,18 @@
 export module config;
 
 import std;
+import icons;
 
 export namespace config {
 
 enum struct ThumbnailType { Titlepic, Endoom };
-enum struct ControllerButtons { Steam, Nintendo, Xbox, Playstation };
+using icons::ControllerType;
 
 struct ApplicationSettings {
     bool fullscreen = false;
     bool swap_face_buttons = false;
     ThumbnailType thumbnail_type = ThumbnailType::Titlepic;
-    ControllerButtons controller_buttons = ControllerButtons::Steam;
+    ControllerType controller_type = ControllerType::Steam;
 };
 
 struct Config {

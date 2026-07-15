@@ -14,7 +14,7 @@
 
 module;
 
-#include <SDL3/SDL_video.h>
+#include <SDL3/SDL.h>
 
 export module ui.settings;
 
@@ -27,9 +27,10 @@ import config;
 
 namespace ui {
 
-const std::string full_version =
-    std::format("v{}+{}{}", appinfo::version_string, appinfo::git::commit,
-                appinfo::git::is_dirty ? ".dirty" : "");
+const std::string full_version = std::format(
+    "v{}+{}{}", appinfo::version_string, appinfo::git::commit,
+    appinfo::git::is_dirty ? ".dirty" : ""
+);
 
 void centered_text(const char* text) {
     const ImVec2 text_size = ImGui::CalcTextSize(text);
@@ -59,6 +60,9 @@ void about_section() {
     // TODO: and the copyright string too
     centered_text_disabled("© 2026 Mia McMahill <electricbrass@proton.me>");
     ImGui::PopFont();
+    ImGui::PushFont(nullptr, ImGui::GetStyle().FontSizeBase * 0.64f);
+    centered_text_disabled("Licensed under the GNU General Public License, version 3");
+    ImGui::PopFont();
 }
 
 export void settings_tab(ApplicationState& state) {
@@ -85,14 +89,14 @@ export void settings_tab(ApplicationState& state) {
     std::array<const char*, 4> button_labels = {"Steam", "Nintendo", "Xbox", "Playstation"};
     if (ImGui::BeginCombo(
             "Button Labels",
-            button_labels[static_cast<size_t>(state.config.settings.controller_buttons)],
-            ImGuiComboFlags_WidthFitPreview)) {
+            button_labels[static_cast<size_t>(state.config.settings.controller_type)],
+            ImGuiComboFlags_WidthFitPreview
+        )) {
         for (size_t i = 0; i < 4; i++) {
             const bool is_selected =
-                (static_cast<size_t>(state.config.settings.controller_buttons) == i);
+                (static_cast<size_t>(state.config.settings.controller_type) == i);
             if (ImGui::Selectable(button_labels[i])) {
-                state.config.settings.controller_buttons =
-                    static_cast<config::ControllerButtons>(i);
+                state.config.settings.controller_type = static_cast<config::ControllerType>(i);
             }
             if (is_selected) {
                 ImGui::SetItemDefaultFocus();
@@ -105,7 +109,8 @@ export void settings_tab(ApplicationState& state) {
     if (ImGui::BeginCombo(
             "Thumbnail Type",
             thumbnail_labels[static_cast<size_t>(state.config.settings.thumbnail_type)],
-            ImGuiComboFlags_WidthFitPreview)) {
+            ImGuiComboFlags_WidthFitPreview
+        )) {
         for (size_t i = 0; i < 2; i++) {
             const bool is_selected =
                 (static_cast<size_t>(state.config.settings.thumbnail_type) == i);

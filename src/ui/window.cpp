@@ -12,6 +12,10 @@
  * GNU General Public License for more details.
  */
 
+module;
+
+#include <SDL3/SDL.h>
+
 export module ui.window;
 
 import std;
@@ -19,6 +23,8 @@ import imgui;
 
 import appinfo;
 import appstate;
+import icons;
+import ui.images;
 import ui.settings;
 import ui.types;
 
@@ -30,6 +36,8 @@ void draw_header() {
     ImGui::SameLine();
 
     ImGui::TextDisabled(appinfo::version_string_cstr);
+
+    // TODO: draw controller icons for L + R indicating the tabs
 }
 
 struct TabInfo {
@@ -82,10 +90,82 @@ void draw_tabs(Tab& current_tab) {
     ImGui::EndGroup();
 }
 
-void draw_footer(bool& should_quit) {
+void draw_footer(
+    bool& should_quit, icons::ControllerType controller, image::TextureManager& texture_manager
+) {
     if (ImGui::Button("Quit")) {
         should_quit = true;
     }
+
+    // TODO: make sure this calculation is correct
+    // and only draw if currently using a controller
+    const float spacing =
+        ImGui::GetStyle().ItemSpacing.x * 3 + ImGui::GetStyle().FramePadding.x * 2;
+    const float text_width = ImGui::CalcTextSize("Select").x + ImGui::CalcTextSize("Cancel").x;
+    const float group_width = (ImGui::GetFrameHeight() * 2) + spacing + text_width;
+    ImGui::SameLine();
+
+    const float right_edge = ImGui::GetContentRegionAvail().x;
+    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + right_edge - group_width);
+    // ImGui::SameLine();
+
+    const icons::Atlas* idk;
+    switch (controller) {
+        case icons::ControllerType::Steam:
+            idk = &icons::steam_atlas;
+            break;
+        case icons::ControllerType::Nintendo:
+            idk = &icons::nintendo_atlas;
+            break;
+        case icons::ControllerType::Xbox:
+            idk = &icons::xbox_atlas;
+            break;
+        case icons::ControllerType::Playstation:
+            idk = &icons::playstation_atlas;
+            break;
+    }
+
+    // if (auto tex = image::load_image(idk->png, gpu_device)) {
+    if (auto tex = texture_manager.get_controller_texture(controller)) {
+        // if (false) {
+        constexpr int icon_size = 128;
+        auto icon = (*idk)
+            [ImGui::GetIO().ConfigNavSwapGamepadButtons ? icons::ControllerButton::FaceRight
+                                                        : icons::ControllerButton::FaceBottom];
+        ImVec2 uv0;
+        ImVec2 uv1;
+        uv0.x = float(icon.x) / idk->width;
+        uv0.y = float(idk->height - icon.y - icon_size) / idk->height;
+        uv1.x = float(icon.x + icon_size) / idk->width;
+        uv1.y = float(idk->height - icon.y) / idk->height;
+        auto height = ImGui::GetFrameHeight();
+
+        ImGui::Image(*tex, {height, height}, uv0, uv1);
+    }
+    ImGui::SameLine();
+    ImGui::TextUnformatted("Select");
+    ImGui::SameLine();
+    ImGui::Spacing();
+    ImGui::SameLine();
+    // if (auto tex = image::load_image(idk->png, gpu_device)) {
+    if (auto tex = texture_manager.get_controller_texture(controller)) {
+        // if (false) {
+        constexpr int icon_size = 128;
+        auto icon = (*idk)
+            [ImGui::GetIO().ConfigNavSwapGamepadButtons ? icons::ControllerButton::FaceBottom
+                                                        : icons::ControllerButton::FaceRight];
+        ImVec2 uv0;
+        ImVec2 uv1;
+        uv0.x = float(icon.x) / idk->width;
+        uv0.y = float(idk->height - icon.y - icon_size) / idk->height;
+        uv1.x = float(icon.x + icon_size) / idk->width;
+        uv1.y = float(idk->height - icon.y) / idk->height;
+        auto height = ImGui::GetFrameHeight();
+
+        ImGui::Image(*tex, {height, height}, uv0, uv1);
+    }
+    ImGui::SameLine();
+    ImGui::TextUnformatted("Cancel");
 }
 
 export bool draw_window(ApplicationState& state) {
@@ -118,7 +198,7 @@ export bool draw_window(ApplicationState& state) {
 
     ImGui::Separator();
 
-    draw_footer(should_quit);
+    draw_footer(should_quit, state.config.settings.controller_type, state.texture_manager);
 
     return should_quit;
 }

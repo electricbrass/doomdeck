@@ -19,6 +19,7 @@ module;
 export module appstate;
 
 import config;
+import ui.images;
 import ui.types;
 
 export struct ApplicationState {
@@ -26,4 +27,6 @@ export struct ApplicationState {
     bool show_demo_window = false;
     SDL_Window* window = nullptr;
     ui::Tab current_tab = ui::Tab::Launcher;
+    SDL_GPUDevice* gpu_device = nullptr;
+    ui::image::TextureManager texture_manager;
 };

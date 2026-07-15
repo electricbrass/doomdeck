@@ -12,23 +12,13 @@
  * GNU General Public License for more details.
  */
 
-export module ui.types;
+export module utils;
 
-import std;
+export namespace util {
 
-export namespace ui {
+template <typename... TYPES>
+struct Visitor : TYPES... {
+    using TYPES::operator()...;
+};
 
-// TODO: should this go in appstate instead?
-enum struct Tab { Launcher, Pwads, Iwads, Ports, Settings };
-
-constexpr auto next_tab(Tab current) -> Tab {
-    return static_cast<Tab>(
-        std::min(std::to_underlying(current) + 1, std::to_underlying(Tab::Settings))
-    );
-}
-
-constexpr auto prev_tab(Tab current) -> Tab {
-    return static_cast<Tab>(std::max(std::to_underlying(current) - 1, 0));
-}
-
-} // namespace ui
+} // namespace util

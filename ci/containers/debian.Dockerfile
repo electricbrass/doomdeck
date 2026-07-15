@@ -1,4 +1,4 @@
-FROM ubuntu:26.04
+FROM gcc:trixie
 # I'll need to get a newer cmake from
 # https://github.com/Kitware/CMake/releases/download/v4.4.0/cmake-4.4.0-linux-x86_64.sh
 # or https://github.com/Kitware/CMake/releases/download/v4.4.0/cmake-4.4.0-linux-aarch64.sh
