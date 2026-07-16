@@ -199,6 +199,9 @@ target_link_libraries(${APP_LIB} PUBLIC stdc++exp)
 
 include(FetchContent)
 
+# For anything we're building, it might as well be static
+set(BUILD_SHARED_LIBS OFF)
+
 FetchContent_Declare(
   zlib-ng
   GIT_REPOSITORY https://github.com/zlib-ng/zlib-ng
@@ -207,7 +210,6 @@ FetchContent_Declare(
   FIND_PACKAGE_ARGS
 )
 FetchContent_MakeAvailable(zlib-ng)
-# TODO: static or shared for this?
 target_link_libraries(${APP_LIB} PUBLIC zlib-ng::zlib)
 
 FetchContent_Declare(
