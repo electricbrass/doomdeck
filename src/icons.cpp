@@ -17,11 +17,13 @@ export module icons;
 import std;
 
 // GCC also supports #embed in all C/C++ versions, and we don't support MSVC
+#ifdef __clang__
 #pragma clang diagnostic ignored "-Wc23-extensions"
+#endif
 
 namespace icons {
 
-namespace {
+// namespace { // apparently making these internal doesn't work on gcc
 
 // NOLINTBEGIN(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
 constexpr std::uint8_t steam_png[] = {
@@ -41,7 +43,7 @@ constexpr std::uint8_t xbox_png[] = {
 };
 // NOLINTEND(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
 
-} // namespace
+// } // namespace
 
 // TODO: add Auto type
 export enum struct ControllerType { Steam, Nintendo, Xbox, Playstation };
