@@ -85,9 +85,15 @@ option(ENABLE_WERROR "Treat compiler warnings as errors" OFF)
 option(ENABLE_UBSAN "Enable undefined behavior sanitizer" OFF)
 option(ENABLE_ASAN "Enable address sanitizer" OFF)
 option(BUILD_TESTS "Build unit tests" OFF)
+option(STATIC_CXX_RUNTIME "Statically link the C++ runtime" OFF)
 
-# TODO: add options for static linking of standard library, SDL, and freetype
-# Other dependencies will probably just do as always static
+if (STATIC_CXX_RUNTIME)
+  if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    message(FATAL_ERROR "Static C++ runtime is only supported if compiling with GCC")
+  else()
+    target_link_options(${APP_EXE} PRIVATE -static-libstdc++ -static-libgcc)
+  endif()
+endif()
 
 # TODO: add options for dev, ci, and user builds
 # dev and ci should have pretty much maximal warnings and errors
