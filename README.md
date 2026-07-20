@@ -39,7 +39,7 @@ The AppImage should run on any distro with glibc 2.41 or newer.
 
 **Will DoomDeck support Windows?**
 
-Probably not. DoomDeck currently requires certain POSIX and freedesktop.org standards that are not implemented on Windows, and there are plenty of good Doom launcher options on Windows already. If there is a strong enough demand, I may consider adding Windows support.
+Probably not. DoomDeck currently requires certain POSIX APIs and freedesktop.org standards that are not natively available on Windows, and there are plenty of good Doom launcher options on Windows already. If there is a strong enough demand, I may consider adding Windows support.
 
 **Will DoomDeck support NetBSD?**
 
