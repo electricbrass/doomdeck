@@ -18,17 +18,13 @@ export import :config;
 
 import std;
 
-namespace appinfo {
+import utils;
 
-export struct Version {
-    unsigned int major;
-    unsigned int minor;
-    unsigned int patch;
+export namespace appinfo {
 
-    constexpr auto operator<=>(const Version&) const = default;
-};
+using Version = util::Version;
 
-export inline constexpr Version version{
+inline constexpr Version version{
     .major = version_major,
     .minor = version_minor,
     .patch = version_patch,

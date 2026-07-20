@@ -39,5 +39,14 @@ FetchContent_Declare(
   GIT_SHALLOW
   FIND_PACKAGE_ARGS
 )
+set(FT_DISABLE_ZLIB ON)
+set(FT_DISABLE_BZIP2 ON)
+set(FT_DISABLE_PNG ON)
+set(FT_DISABLE_HARFBUZZ ON)
+set(FT_DISABLE_BROTLI ON)
+set(FT_DISABLE_HVF ON)
 FetchContent_MakeAvailable(Freetype)
+if(TARGET freetype-interface AND NOT TARGET Freetype::Freetype)
+  add_library(Freetype::Freetype ALIAS freetype-interface)
+endif()
 target_link_libraries(dearimgui PRIVATE Freetype::Freetype)

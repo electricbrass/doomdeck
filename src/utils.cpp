@@ -14,11 +14,38 @@
 
 export module utils;
 
+import std;
+
 export namespace util {
+
+struct Version {
+    std::uint32_t major;
+    std::uint32_t minor;
+    std::uint32_t patch;
+
+    constexpr auto operator<=>(const Version&) const = default;
+};
 
 template <typename... TYPES>
 struct Visitor : TYPES... {
     using TYPES::operator()...;
 };
+
+template <typename T>
+concept Numeric = std::integral<T> || std::floating_point<T>;
+
+template <Numeric T>
+constexpr auto parse_num(const std::string_view str) -> std::optional<T> {
+    T value{};
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    const auto [ptr, ec] = std::from_chars(str.data(), str.data() + str.size(), value);
+
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    if (ec != std::errc{} || ptr != str.data() + str.size()) {
+        return std::nullopt;
+    }
+
+    return value;
+}
 
 } // namespace util

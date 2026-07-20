@@ -17,6 +17,19 @@
       }
     },
     {
+      "name": "dev-gcc",
+      "displayName": "GCC + Ninja",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build-gcc/",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_CXX_COMPILER": "g++",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "ENABLE_ALL_WARNINGS": "ON",
+        "ENABLE_WERROR": "OFF"
+      }
+    },
+    {
       "name": "ci-gcc",
       "displayName": "GCC Build for CI",
       "generator": "Ninja",
@@ -53,7 +66,7 @@
         "ENABLE_WERROR": "ON",
         "ENABLE_ASAN": "ON",
         "ENABLE_UBSAN": "ON",
-        "BUILD_TESTS": "ON"
+        "BUILD_TESTING": "ON"
       }
     },
     {
@@ -64,10 +77,13 @@
       "cacheVariables": {
         "CMAKE_C_COMPILER": "gcc",
         "CMAKE_CXX_COMPILER": "g++",
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
         "FETCHCONTENT_TRY_FIND_PACKAGE_MODE": "NEVER",
         "ENABLE_ASAN": "OFF",
         "ENABLE_UBSAN": "OFF",
-        "BUILD_TESTS": "OFF"
+        "ENABLE_LTO": "ON",
+        "BUILD_TESTING": "OFF",
+        "STATIC_CXX_RUNTIME": "ON"
       }
     }
   ],

@@ -28,13 +28,16 @@ else()
   )
 endif()
 
+include(FetchContent)
+include(CTest)
+include(GetGitInfo)
+
 string(TOLOWER "${PROJECT_NAME}" PROJECT_NAME_LOWER)
 set(APP_ID "net.electricbrass.${PROJECT_NAME_LOWER}")
 
 set(APP_EXE "${PROJECT_NAME_LOWER}")
 set(APP_LIB "${PROJECT_NAME_LOWER}_lib")
 
-include(GetGitInfo)
 string(TIMESTAMP BUILD_DATE "%Y-%m-%d" UTC)
 configure_file(
   src/appinfo_config.cpp.in
@@ -53,6 +56,7 @@ target_sources(${APP_LIB}
     src/icons.cpp
     src/subprocess.cpp
     src/utils.cpp
+    src/flatpakutils.cpp
     src/appinfo.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/appinfo_config.cpp
 )
@@ -84,12 +88,13 @@ option(ENABLE_ALL_WARNINGS "Enable all compiler warnings" OFF)
 option(ENABLE_WERROR "Treat compiler warnings as errors" OFF)
 option(ENABLE_UBSAN "Enable undefined behavior sanitizer" OFF)
 option(ENABLE_ASAN "Enable address sanitizer" OFF)
-option(BUILD_TESTS "Build unit tests" OFF)
+option(ENABLE_LTO "Enable link-time optimization" OFF)
 option(STATIC_CXX_RUNTIME "Statically link the C++ runtime" OFF)
 
 if (STATIC_CXX_RUNTIME)
   if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    message(FATAL_ERROR "Static C++ runtime is only supported if compiling with GCC")
+    message(FATAL_ERROR
+      "Static C++ runtime is only supported if compiling with GCC")
   else()
     target_link_options(${APP_EXE} PRIVATE -static-libstdc++ -static-libgcc)
   endif()
@@ -192,13 +197,6 @@ configure_target(${APP_LIB})
 # Currently this forces building with libstdc++
 target_link_libraries(${APP_LIB} PUBLIC stdc++exp)
 
-# TODO: make sure the correct cmake options are set for when building these
-# Add cmake options to force or disable the fetching?
-# CMake already has that
-# with FETCHCONTENT_TRY_FIND_PACKAGE_MODE
-
-include(FetchContent)
-
 # For anything we're building, it might as well be static
 set(BUILD_SHARED_LIBS OFF)
 
@@ -209,18 +207,25 @@ FetchContent_Declare(
   GIT_SHALLOW
   FIND_PACKAGE_ARGS
 )
+# We don't want to build zlib-ng's tests
+# but it uses the same BUILD_TESTING variable
+# as CTest
+set(_save_build_testing ${BUILD_TESTING})
+set(BUILD_TESTING OFF)
 FetchContent_MakeAvailable(zlib-ng)
+set(BUILD_TESTING ${_save_build_testing})
+unset(_save_build_testing)
 target_link_libraries(${APP_LIB} PUBLIC zlib-ng::zlib)
 
 FetchContent_Declare(
-  nlohmann_json
-  GIT_REPOSITORY https://github.com/nlohmann/json
-  GIT_TAG v3.12.0
+  glaze
+  GIT_REPOSITORY https://github.com/stephenberry/glaze.git
+  GIT_TAG v7.9.0
   GIT_SHALLOW
   FIND_PACKAGE_ARGS
 )
-FetchContent_MakeAvailable(nlohmann_json)
-target_link_libraries(${APP_LIB} PUBLIC nlohmann_json::nlohmann_json)
+FetchContent_MakeAvailable(glaze)
+target_link_libraries(${APP_LIB} PUBLIC glaze::glaze)
 
 # TODO: maybe don't bother with fetchcontent here
 # building sdl has lots of options and a lot of dev dependencies
@@ -238,6 +243,10 @@ target_link_libraries(${APP_EXE} PRIVATE SDL3::SDL3)
 add_subdirectory(vendored SYSTEM)
 target_link_libraries(${APP_EXE} PRIVATE dearimgui)
 target_link_libraries(${APP_EXE} PRIVATE stb)
+
+if(BUILD_TESTING)
+  add_subdirectory(test)
+endif()
 
 include(GNUInstallDirs)
 configure_file(packaging/${APP_ID}.desktop.in ${APP_ID}.desktop)
@@ -261,20 +270,3 @@ install(
 )
 
 # TODO: figure out CPack
-
-if(BUILD_TESTS)
-  find_package(Catch2 3 CONFIG REQUIRED)
-
-  add_executable(unittest
-    test/directories.cpp
-  )
-
-  configure_target(unittest)
-
-  target_link_libraries(unittest PRIVATE ${APP_LIB})
-  target_link_libraries(unittest PRIVATE Catch2::Catch2WithMain)
-
-  include(CTest)
-  include(Catch)
-  catch_discover_tests(unittest ADD_TAGS_AS_LABELS)
-endif()

@@ -40,6 +40,8 @@ CheckOptions:
     value: lower_case
   - key: readability-identifier-naming.TemplateParameterCase
     value: UPPER_CASE
+  - key: readability-identifier-naming.ConceptCase
+    value: CamelCase
   # struct/class members
   - key: readability-identifier-naming.MethodCase
     value: lower_case
@@ -57,9 +59,15 @@ CheckOptions:
   # Allow `if (pointer)`
   - key: readability-implicit-bool-conversion.AllowPointerConditions
     value: true
-    # Allow `if (int)`
+  # Allow `if (int)`
   - key: readability-implicit-bool-conversion.AllowIntegerConditions
     value: true
   # Allow leaving off return types for lambdas
   - key: modernize-use-trailing-return-type.TransformLambdas
     value: none
+  # A lot of these are pretty obvious
+  - key: readability-magic-numbers.IgnorePowersOf2IntegerValues
+    value: true
+  # Annoyingly both of these need the option set
+  - key: cppcoreguidelines-avoid-magic-numbers.IgnorePowersOf2IntegerValues
+    value: true

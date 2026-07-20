@@ -27,6 +27,8 @@ import ui.images;
 import ui.types;
 import ui.window;
 
+import subprocess;
+
 namespace {
 
 auto handle_event(SDL_Event event, ApplicationState& state) -> bool {
