@@ -31,6 +31,9 @@ namespace subprocess {
 export enum struct SubprocessError {
     EmptyArgs,
     Timeout,
+    NotFound,
+    PermissionDenied,
+    InvalidExecutable,
     SystemError,
 };
 
@@ -147,10 +150,19 @@ export auto run_command(const std::span<const std::string> args)
     const std::vector<char*> argv = make_posix_spawn_args(args);
 
     pid_t pid{};
-    if (posix_spawnp(&pid, args[0].c_str(), &actions, nullptr, argv.data(), environ)) {
-        // All the errors are pretty low level system errors where the exact reason for failure
-        // just doesn't really matter to us other than that it failed.
-        return std::unexpected{SystemError};
+    if (const int error = posix_spawnp(&pid, args[0].c_str(), &actions, nullptr, argv.data(), environ)) {
+        switch (error) {
+            case ENOENT:
+            case ENOTDIR:
+                return std::unexpected{NotFound};
+            case EACCES:
+                return std::unexpected{PermissionDenied};
+            case ENOEXEC:
+            case EINVAL:
+                return std::unexpected{InvalidExecutable};
+            default:
+                return std::unexpected{SystemError};
+        }
     }
 
     stdout_pipe->write_fd.close();
@@ -266,10 +278,19 @@ export auto launch_game(const std::span<const std::string> args, const bool redi
     const std::vector<char*> argv = make_posix_spawn_args(args);
 
     pid_t pid{};
-    if (posix_spawnp(&pid, args[0].c_str(), &actions, nullptr, argv.data(), environ)) {
-        // All the errors are pretty low level system errors where the exact reason for failure
-        // just doesn't really matter to us other than that it failed.
-        return std::unexpected{SystemError};
+    if (const int error = posix_spawnp(&pid, args[0].c_str(), &actions, nullptr, argv.data(), environ)) {
+        switch (error) {
+            case ENOENT:
+            case ENOTDIR:
+                return std::unexpected{NotFound};
+            case EACCES:
+                return std::unexpected{PermissionDenied};
+            case ENOEXEC:
+            case EINVAL:
+                return std::unexpected{InvalidExecutable};
+            default:
+                return std::unexpected{SystemError};
+        }
     }
 
     return {};
