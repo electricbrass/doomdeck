@@ -1,7 +1,7 @@
-FROM gcc:trixie
+FROM docker.io/library/gcc:trixie
 # TODO: maybe add appimagetool?
 ARG TARGETARCH
-ARG CMAKE_VERSION=4.3.4 # it seems like there's a bug with embed-dir in 4.4.0
+ARG CMAKE_VERSION=4.4.0
 
 RUN apt-get update && apt-get install -y \
     wget \
@@ -14,7 +14,6 @@ RUN apt-get update && apt-get install -y \
     libcatch2-dev \
     libfreetype-dev \
     && rm -rf /var/lib/apt/lists/*
-
 
 RUN if [ "$TARGETARCH" = "amd64" ]; then \
         ARCH="x86_64"; \

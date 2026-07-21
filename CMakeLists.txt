@@ -62,7 +62,7 @@ target_sources(${APP_LIB}
 )
 
 # Images for #embed
-target_compile_options(${APP_LIB} PRIVATE
+target_compile_options(${APP_LIB} PUBLIC
   "--embed-dir=${CMAKE_CURRENT_SOURCE_DIR}/res"
 )
 
