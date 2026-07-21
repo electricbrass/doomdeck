@@ -90,6 +90,7 @@ option(ENABLE_UBSAN "Enable undefined behavior sanitizer" OFF)
 option(ENABLE_ASAN "Enable address sanitizer" OFF)
 option(ENABLE_LTO "Enable link-time optimization" OFF)
 option(STATIC_CXX_RUNTIME "Statically link the C++ runtime" OFF)
+option(INSTALL_LEGACY_METADATA "Install AppStream metadata with legacy .appdata.xml extension" OFF)
 
 if (STATIC_CXX_RUNTIME)
   if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
@@ -265,6 +266,14 @@ install(
   FILES packaging/${APP_ID}.metainfo.xml
   DESTINATION ${CMAKE_INSTALL_DATADIR}/metainfo
 )
+if(INSTALL_LEGACY_METAINFO)
+  install(
+    FILES packaging/${APP_ID}.metainfo.xml
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/metainfo
+    RENAME ${APP_ID}.appdata.xml
+  )
+endif()
+
 install(
   FILES COPYING
   DESTINATION ${CMAKE_INSTALL_DATADIR}/licenses/${PROJECT_NAME_LOWER}

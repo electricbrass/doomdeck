@@ -83,7 +83,8 @@
         "ENABLE_UBSAN": "OFF",
         "ENABLE_LTO": "ON",
         "BUILD_TESTING": "OFF",
-        "STATIC_CXX_RUNTIME": "ON"
+        "STATIC_CXX_RUNTIME": "ON",
+        "INSTALL_LEGACY_METADATA": "ON"
       }
     }
   ],
