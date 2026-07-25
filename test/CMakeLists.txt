@@ -2,8 +2,10 @@ find_package(Catch2 3 CONFIG REQUIRED)
 
 add_executable(unittest
   directories.cpp
-  utils.cpp
+  flatpakutils.cpp
+  shellutils.cpp
   subprocess.cpp
+  utils.cpp
 )
 
 configure_target(unittest)

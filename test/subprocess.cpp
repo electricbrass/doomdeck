@@ -1,5 +1,4 @@
 #include <catch2/catch_test_macros.hpp>
-#include <catch2/matchers/catch_matchers_range_equals.hpp>
 
 import std;
 import subprocess;
@@ -27,14 +26,18 @@ TEST_CASE("Return exit code", "[subprocess]") {
 }
 
 TEST_CASE("Command does not exist", "[subprocess]") {
-    auto result = subprocess::run_command("nonexistent-really-long-command-so-this-doesnt-accidentally-succeed");
+    auto result = subprocess::run_command(
+        "nonexistent-really-long-command-so-this-doesnt-accidentally-succeed"
+    );
 
     REQUIRE(!result.has_value());
     REQUIRE(result.error() == subprocess::SubprocessError::NotFound);
 }
 
 TEST_CASE("Source port does not exist", "[subprocess]") {
-    std::array<std::string, 1> args = {"nonexistent-really-long-command-so-this-doesnt-accidentally-succeed"};
+    std::array<std::string, 1> args = {
+        "nonexistent-really-long-command-so-this-doesnt-accidentally-succeed"
+    };
     auto result = subprocess::launch_game(args);
 
     REQUIRE(!result.has_value());
@@ -50,9 +53,7 @@ TEST_CASE("File is not executable", "[subprocess]") {
     }
 
     std::filesystem::permissions(
-        path,
-        std::filesystem::perms::owner_read |
-        std::filesystem::perms::owner_write
+        path, std::filesystem::perms::owner_read | std::filesystem::perms::owner_write
     );
     auto result = subprocess::run_command(path.string());
 

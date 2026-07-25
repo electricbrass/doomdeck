@@ -94,3 +94,6 @@ make sure to search through all of these for each thing:
 - wads: xdg_data_home and xdg_data_dirs, all in doom and games/doom
 - desktop files: xdg_data_home and xdg_data_dirs, applications subdir
 - desktop files created by this program: xdg_data_home/applications/this_app_id
+
+**dependencies**
+https://github.com/libcpr/cpr for fetching from idgames

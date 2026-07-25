@@ -114,10 +114,11 @@ constexpr auto make_ascii_lowercase(std::string& s) -> std::string& {
 }
 
 [[nodiscard]]
-constexpr auto split(const std::string_view s, const char delimiter) -> std::vector<std::string_view> {
+constexpr auto split(const std::string_view s, const char delimiter)
+    -> std::vector<std::string_view> {
     return std::views::split(s, delimiter) |
-        std::views::transform([](auto&& r) { return std::string_view(r); }) |
-        std::ranges::to<std::vector<std::string_view>>();
+           std::views::transform([](auto&& r) { return std::string_view{r}; }) |
+           std::ranges::to<std::vector<std::string_view>>();
 }
 
 } // namespace stringutil

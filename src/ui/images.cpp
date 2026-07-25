@@ -73,7 +73,7 @@ public:
 
     // TODO: better error handling here
     // maybe return std::expected instead of optional?
-    auto load_texture(std::span<const std::uint8_t> data) -> std::optional<TextureData> {
+    auto load_texture(const std::span<const std::uint8_t> data) -> std::optional<TextureData> {
         using std::experimental::scope_exit;
         int width, height; // NOLINT
         stbi_uc* image_data = stbi_load_from_memory(
@@ -192,7 +192,7 @@ public:
     TextureManager(TextureManager&&) = delete;
     auto operator=(TextureManager&&) -> TextureManager& = delete;
 
-    auto load_texture(std::span<const std::uint8_t> data) -> std::optional<TextureID> {
+    auto load_texture(const std::span<const std::uint8_t> data) -> std::optional<TextureID> {
         const auto texture = m_textureloader.load_texture(data);
         if (!texture) {
             return std::nullopt;
@@ -215,7 +215,7 @@ public:
     }
 
     [[nodiscard]]
-    auto get_texture(TextureID id) const -> std::optional<ImTextureID> {
+    auto get_texture(const TextureID id) const -> std::optional<ImTextureID> {
         const auto it = m_textures.find(id);
         if (it == m_textures.end()) {
             return std::nullopt;
@@ -225,7 +225,8 @@ public:
     }
 
     [[nodiscard]]
-    auto get_controller_texture(icons::ControllerType type) const -> std::optional<ImTextureID> {
+    auto get_controller_texture(const icons::ControllerType type) const
+        -> std::optional<ImTextureID> {
         // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index)
         const auto id = m_controller_textures[static_cast<std::size_t>(type)];
         if (!id) {

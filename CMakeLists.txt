@@ -57,14 +57,22 @@ target_sources(${APP_LIB}
     src/subprocess.cpp
     src/utils.cpp
     src/flatpakutils.cpp
+    src/shellutils.cpp
     src/appinfo.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/appinfo_config.cpp
 )
 
 # Images for #embed
-target_compile_options(${APP_LIB} PUBLIC
-  "--embed-dir=${CMAKE_CURRENT_SOURCE_DIR}/res"
-)
+if (CMAKE_VERSION VERSION_EQUAL "4.4.0")
+  # Workaround for a bug in 4.4.0
+  target_compile_options(${APP_LIB} PUBLIC
+    "--embed-dir=${CMAKE_CURRENT_SOURCE_DIR}/res"
+  )
+else()
+  target_compile_options(${APP_LIB} PRIVATE
+    "--embed-dir=${CMAKE_CURRENT_SOURCE_DIR}/res"
+  )
+endif()
 
 add_executable(${APP_EXE})
 
@@ -91,6 +99,7 @@ option(ENABLE_ASAN "Enable address sanitizer" OFF)
 option(ENABLE_LTO "Enable link-time optimization" OFF)
 option(STATIC_CXX_RUNTIME "Statically link the C++ runtime" OFF)
 option(INSTALL_LEGACY_METADATA "Install AppStream metadata with legacy .appdata.xml extension" OFF)
+option(USE_INTERNAL_SQLITE "Use vendored SQLite instead of system package" OFF)
 
 if (STATIC_CXX_RUNTIME)
   if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
@@ -228,9 +237,6 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(glaze)
 target_link_libraries(${APP_LIB} PUBLIC glaze::glaze)
 
-# TODO: maybe don't bother with fetchcontent here
-# building sdl has lots of options and a lot of dev dependencies
-# so it's probably better to just use whatever the system provides
 FetchContent_Declare(
   SDL3
   GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
@@ -241,6 +247,20 @@ FetchContent_Declare(
 set(SDL_X11_XTEST OFF)
 FetchContent_MakeAvailable(SDL3)
 target_link_libraries(${APP_EXE} PRIVATE SDL3::SDL3)
+
+FetchContent_Declare(
+  libsl3
+  GIT_REPOSITORY https://github.com/a4z/libsl3
+  GIT_TAG v1.2.53003
+  GIT_SHALLOW
+  FIND_PACKAGE_ARGS
+)
+set(sl3_BUILD_TESTING OFF)
+set(sl3_BUILD_DOCS OFF)
+set(sl3_USE_COMMON_COMPILER_WARNINGS OFF)
+set(sl3_USE_INTERNAL_SQLITE3 ${USE_INTERNAL_SQLITE})
+FetchContent_MakeAvailable(libsl3)
+target_link_libraries(${APP_LIB} PUBLIC sl3)
 
 add_subdirectory(vendored SYSTEM)
 target_link_libraries(${APP_EXE} PRIVATE dearimgui)

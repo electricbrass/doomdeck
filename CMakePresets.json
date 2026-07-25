@@ -4,14 +4,20 @@
   "$comment": "todo: gcc and clang ci presets, testing presets, appimage preset, maybe flatpak preset if it does presets",
   "configurePresets": [
     {
-      "name": "dev",
-      "displayName": "Clang + Ninja",
+      "name": "base",
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/",
       "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "dev",
+      "displayName": "Clang + Ninja",
+      "inherits": "base",
+      "cacheVariables": {
         "CMAKE_C_COMPILER": "clang",
         "CMAKE_CXX_COMPILER": "clang++",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
         "ENABLE_ALL_WARNINGS": "ON",
         "ENABLE_WERROR": "OFF"
       }
@@ -19,12 +25,11 @@
     {
       "name": "dev-gcc",
       "displayName": "GCC + Ninja",
-      "generator": "Ninja",
+      "inherits": "base",
       "binaryDir": "${sourceDir}/build-gcc/",
       "cacheVariables": {
         "CMAKE_C_COMPILER": "gcc",
         "CMAKE_CXX_COMPILER": "g++",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
         "ENABLE_ALL_WARNINGS": "ON",
         "ENABLE_WERROR": "OFF"
       }
@@ -32,8 +37,7 @@
     {
       "name": "ci-gcc",
       "displayName": "GCC Build for CI",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/",
+      "inherits": "base",
       "cacheVariables": {
         "CMAKE_C_COMPILER": "gcc",
         "CMAKE_CXX_COMPILER": "g++",
@@ -44,8 +48,7 @@
     {
       "name": "ci-clang",
       "displayName": "Clang Build for CI",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/",
+      "inherits": "base",
       "cacheVariables": {
         "CMAKE_C_COMPILER": "clang",
         "CMAKE_CXX_COMPILER": "clang++",
@@ -56,12 +59,10 @@
     {
       "name": "test",
       "displayName": "Unit Tests",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/",
+      "inherits": "base",
       "cacheVariables": {
         "CMAKE_C_COMPILER": "clang",
         "CMAKE_CXX_COMPILER": "clang++",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
         "ENABLE_ALL_WARNINGS": "ON",
         "ENABLE_WERROR": "ON",
         "ENABLE_ASAN": "ON",
@@ -72,7 +73,7 @@
     {
       "name": "appimage",
       "displayName": "AppImage",
-      "generator": "Ninja",
+      "inherits": "base",
       "binaryDir": "${sourceDir}/build-appimage/",
       "cacheVariables": {
         "CMAKE_C_COMPILER": "gcc",
@@ -84,7 +85,8 @@
         "ENABLE_LTO": "ON",
         "BUILD_TESTING": "OFF",
         "STATIC_CXX_RUNTIME": "ON",
-        "INSTALL_LEGACY_METADATA": "ON"
+        "INSTALL_LEGACY_METADATA": "ON",
+        "USE_INTERNAL_SQLITE": "ON"
       }
     }
   ],

@@ -48,4 +48,30 @@ constexpr auto parse_num(const std::string_view str) -> std::optional<T> {
     return value;
 }
 
+template <typename T>
+concept OptionalLike = requires(T x) {
+    { x.has_value() } -> std::convertible_to<bool>;
+    *x;
+};
+
+template <typename F>
+struct FilterTransformClosure : std::ranges::range_adaptor_closure<FilterTransformClosure<F>> {
+    F func;
+
+    template <std::ranges::viewable_range R>
+        requires OptionalLike<std::invoke_result_t<F&, std::ranges::range_reference_t<R>>>
+    constexpr auto operator()(R&& range) const {
+        return std::forward<R>(range) | std::views::transform(func) |
+               std::views::filter([](const auto& x) { return x.has_value(); }) |
+               std::views::transform([](auto&& x) { return *x; });
+    }
+};
+
+template <typename F>
+constexpr auto filter_transform(F&& func) {
+    return FilterTransformClosure<std::decay_t<F>>{
+        .func = std::forward<F>(func),
+    };
+}
+
 } // namespace util
