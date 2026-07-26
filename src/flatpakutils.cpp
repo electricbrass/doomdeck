@@ -24,7 +24,20 @@ import stringutils;
 import subprocess;
 import utils;
 
+namespace flatpakutil {
+namespace {
+
+constexpr const char* columns_arg = "--columns=name,application,branch,options,installation";
+
+} // namespace
+} // namespace flatpakutil
+
 export namespace flatpakutil {
+
+// TODO: function that takes flatpak stuff: app id, user vs system, branch, command
+// and produces the args vector for run_command
+// should it take in the rest of the args and handle the proper @@ and everything?
+// or should it be on the caller to push_back those after getting the vector?
 
 using Version = util::Version;
 
@@ -55,10 +68,37 @@ auto version() -> std::optional<Version> {
 }
 
 struct FlatpakApp {
+    enum struct Installation {
+        User,
+        System,
+    };
+
+    struct Branch {
+        std::string name;
+        Installation installation;
+        bool is_current;
+
+        // sorts system before user, the alphabetical by name
+        constexpr auto operator<=>(const Branch& other) const -> std::strong_ordering {
+            const auto installation_key = [](Installation i) {
+                return i == Installation::System ? 0 : 1;
+            };
+
+            if (const auto cmp =
+                    installation_key(installation) <=> installation_key(other.installation);
+                cmp != std::strong_ordering::equal) {
+                return cmp;
+            }
+
+            return name <=> other.name;
+        }
+
+        constexpr auto operator==(const Branch&) const -> bool = default;
+    };
+
     std::string name;
     std::string app_id;
-    std::unordered_set<std::string> branches;
-    std::string current_branch;
+    std::vector<Branch> branches;
 
     constexpr auto operator==(const FlatpakApp&) const -> bool = default;
 };
@@ -66,46 +106,50 @@ struct FlatpakApp {
 // exported for unit testing purposes
 namespace detail {
 
-struct FlatpakJSON {
+struct FlatpakListEntry {
     std::string name;
     std::string application_id;
     std::string branch;
     std::string options;
+    std::string installation;
 
-    // For some reason Catch2 doesn't like an implicit operator==
-    constexpr auto operator==(const FlatpakJSON&) const -> bool = default;
+    constexpr auto operator==(const FlatpakListEntry&) const -> bool = default;
 };
 
-auto parse_apps_from_json(const std::string_view json) -> std::vector<FlatpakJSON> {
-    std::vector<FlatpakJSON> parsed;
+auto parse_apps_from_json(const std::string_view json) -> std::vector<FlatpakListEntry> {
+    std::vector<FlatpakListEntry> parsed;
     if (const auto errors = glz::read_json(parsed, json)) {
-        // TODO: error handling!!
+        // just silencing the nodiscard warning
+        // we don't really care why it failed
+        // and we'll just return an empty list
     }
     return parsed;
 }
 
-auto parse_apps_from_columns(const std::string_view columns) -> std::vector<FlatpakJSON> {
+auto parse_apps_from_columns(const std::string_view columns) -> std::vector<FlatpakListEntry> {
     using std::views::transform, std::views::split, std::views::filter, std::ranges::to;
     using stringutil::trim, util::filter_transform;
-    return columns | split('\n') | filter_transform([](auto&& line) -> std::optional<FlatpakJSON> {
+    return columns | split('\n') |
+           filter_transform([](auto&& line) -> std::optional<FlatpakListEntry> {
                const auto columns = stringutil::split(trim(std::string_view{line}), '\t');
-               if (columns.size() != 4) {
+               if (columns.size() != 5) {
                    return std::nullopt;
                }
-               return FlatpakJSON{
+               return FlatpakListEntry{
                    .name{columns[0]},
                    .application_id{columns[1]},
                    .branch{columns[2]},
                    .options{columns[3]},
+                   .installation{columns[4]},
                };
            }) |
-           to<std::vector<FlatpakJSON>>();
+           to<std::vector<FlatpakListEntry>>();
 }
 
-auto apps_json_to_whatever(const std::span<const FlatpakJSON> parsed_json)
+auto apps_from_parsed_list(const std::span<const FlatpakListEntry> parsed_list)
     -> std::unordered_map<std::string, FlatpakApp> {
     std::unordered_map<std::string, FlatpakApp> apps;
-    for (const auto& ref : parsed_json) {
+    for (const auto& ref : parsed_list) {
         auto& app = apps[ref.application_id];
 
         if (app.name.empty()) {
@@ -113,11 +157,12 @@ auto apps_json_to_whatever(const std::span<const FlatpakJSON> parsed_json)
             app.app_id = ref.application_id;
         }
 
-        app.branches.insert(ref.branch);
-
-        if (ref.options.contains("current")) {
-            app.current_branch = ref.branch;
-        }
+        app.branches.emplace_back(
+            ref.branch,
+            ref.installation == "system" ? FlatpakApp::Installation::System
+                                         : FlatpakApp::Installation::User,
+            ref.options.contains("current")
+        );
     }
     return apps;
 }
@@ -126,24 +171,20 @@ auto apps_json_to_whatever(const std::span<const FlatpakJSON> parsed_json)
 
 // Use this one with flatpak 1.17.0 or newer
 auto installed_apps_from_json() -> std::unordered_map<std::string, FlatpakApp> {
-    const auto result = subprocess::run_command(
-        "flatpak", "list", "--app", "--json", "--columns=name,application,branch,options"
-    );
+    const auto result = subprocess::run_command("flatpak", "list", "--app", "--json", columns_arg);
     if (!result || result->exit_code != 0) {
         return {};
     }
-    return detail::apps_json_to_whatever(detail::parse_apps_from_json(result->stdout));
+    return detail::apps_from_parsed_list(detail::parse_apps_from_json(result->stdout));
 }
 
 // Use this one with flatpak older than 1.17.0
 auto installed_apps_from_columns() -> std::unordered_map<std::string, FlatpakApp> {
-    const auto result = subprocess::run_command(
-        "flatpak", "list", "--app", "--columns=name,application,branch,options"
-    );
+    const auto result = subprocess::run_command("flatpak", "list", "--app", columns_arg);
     if (!result || result->exit_code != 0) {
         return {};
     }
-    return detail::apps_json_to_whatever(detail::parse_apps_from_columns(result->stdout));
+    return detail::apps_from_parsed_list(detail::parse_apps_from_columns(result->stdout));
 }
 
-}; // namespace flatpakutil
+} // namespace flatpakutil
