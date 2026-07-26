@@ -15,6 +15,7 @@
 export module utils;
 
 import std;
+import subprocess;
 
 export namespace util {
 
@@ -71,6 +72,37 @@ template <typename F>
 constexpr auto filter_transform(F&& func) {
     return FilterTransformClosure<std::decay_t<F>>{
         .func = std::forward<F>(func),
+    };
+}
+
+enum struct OpenFileError {
+    XdgOpenNotFound,
+    FileNotFound,
+    RelativePath,
+    Other,
+};
+
+auto open_file(const std::filesystem::path& path) -> std::expected<void, OpenFileError> {
+    using enum OpenFileError;
+    if (path.is_relative()) {
+        return std::unexpected{RelativePath};
+    }
+
+    if (const auto result = subprocess::run_command("xdg-open", path)) {
+        switch (result->exit_code) {
+            // from xdg-open man page
+            case 0:
+                return {};
+            case 2:
+                return std::unexpected{FileNotFound};
+            default:
+                return std::unexpected{Other};
+        }
+    } else {
+        if (result.error() == subprocess::SubprocessError::NotFound) {
+            return std::unexpected{XdgOpenNotFound};
+        }
+        return std::unexpected{Other};
     };
 }
 
