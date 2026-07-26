@@ -12,6 +12,7 @@ Checks: >
   -misc-no-recursion,
   cppcoreguidelines-*,
   -cppcoreguidelines-pro-type-vararg,
+  -cppcoreguidelines-avoid-magic-numbers,
   google-explicit-constructor,
   google-runtime-int,
   readability-*,
@@ -68,6 +69,5 @@ CheckOptions:
   # A lot of these are pretty obvious
   - key: readability-magic-numbers.IgnorePowersOf2IntegerValues
     value: true
-  # Annoyingly both of these need the option set
-  - key: cppcoreguidelines-avoid-magic-numbers.IgnorePowersOf2IntegerValues
-    value: true
+  - key: readability-magic-numbers.IgnoredIntegerValues
+    value: 1;2;3;4;5;10
