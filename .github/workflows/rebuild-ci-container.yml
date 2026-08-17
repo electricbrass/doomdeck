@@ -10,7 +10,8 @@ permissions:
   packages: write
 
 jobs:
-  build-and-push:
+  build:
+    name: Build and push to ghcr.io
     runs-on: ubuntu-latest
     steps:
       - name: Login to ghcr
