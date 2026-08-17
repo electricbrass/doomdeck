@@ -41,6 +41,7 @@ RUN case "$TARGETARCH" in \
     URL="https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-${ARCH}.AppImage"; \
     wget -qO /tmp/linuxdeploy.AppImage "$URL" && \
     chmod +x /tmp/linuxdeploy.AppImage && \
+    file /tmp/linuxdeploy.AppImage && \
     /tmp/linuxdeploy.AppImage --appimage-extract && \
     mv squashfs-root /opt/linuxdeploy && \
     ln -s /opt/linuxdeploy/AppRun /usr/local/bin/linuxdeploy && \
