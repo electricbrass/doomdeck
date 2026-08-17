@@ -5,6 +5,10 @@ on:
   push:
     paths: ['ci/containers/debian.Containerfile']
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
@@ -25,4 +29,4 @@ jobs:
           platforms: linux/amd64,linux/arm64
           file: ci/containers/debian.Containerfile
           push: true
-          tags: ghcr.io/${{ github.repository }}-debian:latest
+          tags: ghcr.io/${{ github.repository }}-ci:debian
