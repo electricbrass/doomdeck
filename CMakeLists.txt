@@ -230,7 +230,7 @@ target_link_libraries(${APP_LIB} PUBLIC zlib-ng::zlib)
 FetchContent_Declare(
   glaze
   GIT_REPOSITORY https://github.com/stephenberry/glaze.git
-  GIT_TAG v7.9.0
+  GIT_TAG v8.0.0
   GIT_SHALLOW
   FIND_PACKAGE_ARGS
 )
@@ -240,7 +240,7 @@ target_link_libraries(${APP_LIB} PUBLIC glaze::glaze)
 FetchContent_Declare(
   SDL3
   GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
-  GIT_TAG release-3.4.12
+  GIT_TAG release-3.4.14
   GIT_SHALLOW
   FIND_PACKAGE_ARGS
 )
