@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 4.0)
 
-if (CMAKE_VERSION VERSION_GREATER_EQUAL "4.4.0")
+if(CMAKE_VERSION VERSION_GREATER_EQUAL "4.4.0")
   set(CMAKE_EXPERIMENTAL_CXX_IMPORT_STD "f35a9ac6-8463-4d38-8eec-5d6008153e7d")
-elseif (CMAKE_VERSION VERSION_GREATER_EQUAL "4.3.0")
+elseif(CMAKE_VERSION VERSION_GREATER_EQUAL "4.3.0")
   set(CMAKE_EXPERIMENTAL_CXX_IMPORT_STD "451f2fe2-a8a2-47c3-bc32-94786d8fc91b")
-elseif (CMAKE_VERSION VERSION_GREATER_EQUAL "4.0.3")
+elseif(CMAKE_VERSION VERSION_GREATER_EQUAL "4.0.3")
   set(CMAKE_EXPERIMENTAL_CXX_IMPORT_STD "d0edc3af-4c50-42ea-a356-e2862fe7a444")
 else()
   set(CMAKE_EXPERIMENTAL_CXX_IMPORT_STD "a9e1cf81-9932-4810-974b-6eccaf14e457")
@@ -13,7 +13,7 @@ set(CMAKE_COLOR_DIAGNOSTICS ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-if (CMAKE_VERSION VERSION_GREATER_EQUAL "4.3.0")
+if(CMAKE_VERSION VERSION_GREATER_EQUAL "4.3.0")
   project(
     DoomDeck
     VERSION 0.1.0
@@ -63,7 +63,7 @@ target_sources(${APP_LIB}
 )
 
 # Images for #embed
-if (CMAKE_VERSION VERSION_EQUAL "4.4.0")
+if(CMAKE_VERSION VERSION_EQUAL "4.4.0")
   # Workaround for a bug in 4.4.0
   target_compile_options(${APP_LIB} PUBLIC
     "--embed-dir=${CMAKE_CURRENT_SOURCE_DIR}/res"
@@ -89,8 +89,7 @@ target_sources(${APP_EXE}
 
 target_link_libraries(${APP_EXE} PRIVATE ${APP_LIB})
 
-# TODO: add options for sanitizers: ASan, UBSan, and others
-# probably no need for TSan here
+# TODO: maybe add thread sanitizer
 
 option(ENABLE_ALL_WARNINGS "Enable all compiler warnings" OFF)
 option(ENABLE_WERROR "Treat compiler warnings as errors" OFF)
@@ -101,20 +100,19 @@ option(STATIC_CXX_RUNTIME "Statically link the C++ runtime" OFF)
 option(INSTALL_LEGACY_METADATA "Install AppStream metadata with legacy .appdata.xml extension" OFF)
 option(USE_INTERNAL_SQLITE "Use vendored SQLite instead of system package" OFF)
 
-if (STATIC_CXX_RUNTIME)
-  if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+if((ENABLE_ASAN OR ENABLE_UBSAN) AND (ENABLE_LTO OR STATIC_CXX_RUNTIME))
+  message(FATAL_ERROR
+    "Sanitizers cannot be used with LTO or static C++ runtime")
+endif()
+
+if(STATIC_CXX_RUNTIME)
+  if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     message(FATAL_ERROR
       "Static C++ runtime is only supported if compiling with GCC")
   else()
     target_link_options(${APP_EXE} PRIVATE -static-libstdc++ -static-libgcc)
   endif()
 endif()
-
-# TODO: add options for dev, ci, and user builds
-# dev and ci should have pretty much maximal warnings and errors
-# user should just have stuff we can guarantee
-# like class-memaccess or old-style-cast
-# target_compile_options(doomdeck PRIVATE "-Werror")
 
 include(CheckCXXCompilerFlag)
 
@@ -200,6 +198,34 @@ function(configure_target target)
     "-Wno-error=unused-command-line-argument"
     "-Wno-error=reserved-module-identifier"
   )
+
+  if(ENABLE_ASAN)
+    target_compile_options(${target} PRIVATE
+      "-fsanitize=address"
+      "-fno-omit-frame-pointer"
+      "-fno-optimize-sibling-calls"
+    )
+    target_link_options(${target} PRIVATE
+      "-fsanitize=address"
+    )
+  endif()
+
+  if(ENABLE_UBSAN)
+    target_compile_options(${target} PRIVATE
+      "-fno-sanitize-recover=undefined"
+    )
+    target_link_options(${target} PRIVATE
+      "-fno-sanitize-recover=undefined"
+    )
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+      target_compile_options(${target} PRIVATE
+        "-fno-sanitize-recover=nullability"
+      )
+      target_link_options(${target} PRIVATE
+        "-fno-sanitize-recover=nullability"
+      )
+    endif()
+  endif()
 endfunction()
 
 configure_target(${APP_EXE})
