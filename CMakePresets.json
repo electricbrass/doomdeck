@@ -1,10 +1,10 @@
 {
   "$schema": "https://cmake.org/cmake/help/latest/_downloads/3e2d73bff478d88a7de0de736ba5e361/schema.json",
   "version": 10,
-  "$comment": "todo: gcc and clang ci presets, testing presets, appimage preset, maybe flatpak preset if it does presets",
   "configurePresets": [
     {
       "name": "base",
+      "hidden": true,
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/",
       "cacheVariables": {
@@ -12,46 +12,61 @@
       }
     },
     {
-      "name": "dev",
-      "displayName": "Clang + Ninja",
+      "name": "clang",
+      "hidden": true,
       "inherits": "base",
       "cacheVariables": {
         "CMAKE_C_COMPILER": "clang",
-        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_CXX_COMPILER": "clang++"
+      }
+    },
+    {
+      "name": "gcc",
+      "hidden": true,
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_CXX_COMPILER": "g++"
+      }
+    },
+    {
+      "name": "dev-clang",
+      "displayName": "Dev Build (Clang)",
+      "inherits": "clang",
+      "cacheVariables": {
         "ENABLE_ALL_WARNINGS": "ON",
         "ENABLE_WERROR": "OFF"
       }
     },
     {
       "name": "dev-gcc",
-      "displayName": "GCC + Ninja",
-      "inherits": "base",
+      "displayName": "Dev Build (GCC)",
+      "inherits": "gcc",
       "binaryDir": "${sourceDir}/build-gcc/",
       "cacheVariables": {
-        "CMAKE_C_COMPILER": "gcc",
-        "CMAKE_CXX_COMPILER": "g++",
         "ENABLE_ALL_WARNINGS": "ON",
         "ENABLE_WERROR": "OFF"
       }
     },
     {
+      "name": "dev",
+      "displayName": "Dev Build",
+      "inherits": "dev-clang"
+    },
+    {
       "name": "ci-gcc",
-      "displayName": "GCC Build for CI",
-      "inherits": "base",
+      "displayName": "GCC CI",
+      "inherits": "gcc",
       "cacheVariables": {
-        "CMAKE_C_COMPILER": "gcc",
-        "CMAKE_CXX_COMPILER": "g++",
         "ENABLE_ALL_WARNINGS": "ON",
         "ENABLE_WERROR": "ON"
       }
     },
     {
       "name": "ci-clang",
-      "displayName": "Clang Build for CI",
-      "inherits": "base",
+      "displayName": "Clang CI",
+      "inherits": "clang",
       "cacheVariables": {
-        "CMAKE_C_COMPILER": "clang",
-        "CMAKE_CXX_COMPILER": "clang++",
         "ENABLE_ALL_WARNINGS": "ON",
         "ENABLE_WERROR": "ON"
       }
@@ -59,10 +74,8 @@
     {
       "name": "test",
       "displayName": "Unit Tests",
-      "inherits": "base",
+      "inherits": "clang",
       "cacheVariables": {
-        "CMAKE_C_COMPILER": "clang",
-        "CMAKE_CXX_COMPILER": "clang++",
         "ENABLE_ALL_WARNINGS": "ON",
         "ENABLE_WERROR": "ON",
         "ENABLE_ASAN": "ON",
@@ -71,19 +84,24 @@
       }
     },
     {
-      "name": "appimage",
-      "displayName": "AppImage",
+      "name": "release",
+      "displayName": "Release Build",
       "inherits": "base",
-      "binaryDir": "${sourceDir}/build-appimage/",
       "cacheVariables": {
-        "CMAKE_C_COMPILER": "gcc",
-        "CMAKE_CXX_COMPILER": "g++",
         "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-        "FETCHCONTENT_TRY_FIND_PACKAGE_MODE": "NEVER",
         "ENABLE_ASAN": "OFF",
         "ENABLE_UBSAN": "OFF",
         "ENABLE_LTO": "ON",
-        "BUILD_TESTING": "OFF",
+        "BUILD_TESTING": "OFF"
+      }
+    },
+    {
+      "name": "appimage",
+      "displayName": "AppImage",
+      "inherits": ["gcc", "release"],
+      "binaryDir": "${sourceDir}/build-appimage/",
+      "cacheVariables": {
+        "FETCHCONTENT_TRY_FIND_PACKAGE_MODE": "NEVER",
         "STATIC_CXX_RUNTIME": "ON",
         "INSTALL_LEGACY_METADATA": "ON",
         "USE_INTERNAL_SQLITE": "ON"
@@ -94,6 +112,16 @@
     {
       "name": "dev",
       "configurePreset": "dev",
+      "targets": ["doomdeck"]
+    },
+    {
+      "name": "dev-gcc",
+      "configurePreset": "dev-gcc",
+      "targets": ["doomdeck"]
+    },
+    {
+      "name": "dev-clang",
+      "configurePreset": "dev-clang",
       "targets": ["doomdeck"]
     },
     {
@@ -108,6 +136,11 @@
       "name": "test",
       "configurePreset": "test",
       "targets": ["unittest"]
+    },
+    {
+      "name": "release",
+      "configurePreset": "release",
+      "targets": ["doomdeck"]
     },
     {
       "name": "appimage",
