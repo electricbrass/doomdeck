@@ -9,11 +9,12 @@ jobs:
       fail-fast: false
       matrix:
         compiler: [gcc, clang]
+        arch: [x86_64, aarch64]
         include:
-          - runner: ubuntu-26.04
-            arch: x86_64
-          - runner: ubuntu-26.04-arm
-            arch: aarch64
+          - arch: x86_64
+            runner: ubuntu-26.04
+          - arch: aarch64
+            runner: ubuntu-26.04-arm
     container: ghcr.io/${{ github.repository }}-ci:debian
     runs-on: ${{ matrix.runner }}
     steps:
@@ -29,10 +30,10 @@ jobs:
       fail-fast: true
       matrix:
         include:
-          - runner: ubuntu-26.04
-            arch: x86_64
-          - runner: ubuntu-26.04-arm
-            arch: aarch64
+          - arch: x86_64
+            runner: ubuntu-26.04
+          - arch: aarch64
+            runner: ubuntu-26.04-arm
     container: ghcr.io/${{ github.repository }}-ci:debian
     runs-on: ${{ matrix.runner }}
     steps:
@@ -49,10 +50,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - runner: ubuntu-26.04
-            arch: x86_64
-          - runner: ubuntu-26.04-arm
-            arch: aarch64
+          - arch: x86_64
+            runner: ubuntu-26.04
+          - arch: aarch64
+            runner: ubuntu-26.04-arm
     container: ghcr.io/${{ github.repository }}-ci:debian
     runs-on: ${{ matrix.runner }}
     steps:
