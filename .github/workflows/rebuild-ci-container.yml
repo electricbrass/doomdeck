@@ -23,11 +23,11 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Login to ghcr
-        uses: docker/login-action@v4
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ github.token }}
+        run: |
+          docker login \
+            --registry ghcr.io \
+            --username ${{ github.actor }} \
+            --password ${{ github.token }}
       - name: Build image
         run: |
           docker build \
@@ -43,16 +43,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Login to ghcr
-        uses: docker/login-action@v4
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ github.token }}
+        run: |
+          docker login \
+            --registry ghcr.io \
+            --username ${{ github.actor }} \
+            --password ${{ github.token }}
       - name: Create manifest
         run: |
-          docker manifest create \
-            ghcr.io/${{ github.repository }}-ci:debian \
+          docker buildx imagetools create \
+            --tag ghcr.io/${{ github.repository }}-ci:debian \
             ghcr.io/${{ github.repository }}-ci:debian-amd64 \
             ghcr.io/${{ github.repository }}-ci:debian-arm64
-          docker manifest push \
-            ghcr.io/${{ github.repository }}-ci:debian
