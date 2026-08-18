@@ -12,6 +12,31 @@ permissions:
 jobs:
   build:
     name: Build and push to ghcr.io
+    strategy:
+      matrix:
+        include:
+          - runner: ubuntu-26.04
+            arch: amd64
+          - runner: ubuntu-26.04-arm
+            arch: arm64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - name: Login to ghcr
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+      - name: Build and push
+        uses: docker/build-push-action@v7
+        with:
+          platforms: linux/${{ matrix.arch }}
+          file: ci/containers/debian.Containerfile
+          push: true
+          tags: ghcr.io/${{ github.repository }}-ci:debian-${{ matrix.arch }}
+  manifest:
+    name: Create multi-arch manifest
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - name: Login to ghcr
@@ -20,17 +45,11 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ github.token }}
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v4
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
-      - name: Test ARM64 emulation
+      - name: Create manifest
         run: |
-          docker run --rm --platform linux/arm64 alpine uname -m
-      - name: Build and push
-        uses: docker/build-push-action@v7
-        with:
-          platforms: linux/amd64,linux/arm64
-          file: ci/containers/debian.Containerfile
-          push: true
-          tags: ghcr.io/${{ github.repository }}-ci:debian
+          docker manifest create \
+            ghcr.io/${{ github.repository }}-ci:debian \
+            ghcr.io/${{ github.repository }}-ci:debian-amd64 \
+            ghcr.io/${{ github.repository }}-ci:debian-arm64
+          docker manifest push \
+            ghcr.io/${{ github.repository }}-ci:debian
