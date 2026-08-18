@@ -150,7 +150,8 @@ export auto run_command(const std::span<const std::string> args)
     const std::vector<char*> argv = make_posix_spawn_args(args);
 
     pid_t pid{};
-    if (const int error = posix_spawnp(&pid, args[0].c_str(), &actions, nullptr, argv.data(), environ)) {
+    if (const int error =
+            posix_spawnp(&pid, args[0].c_str(), &actions, nullptr, argv.data(), environ)) {
         switch (error) {
             case ENOENT:
             case ENOTDIR:
@@ -278,7 +279,8 @@ export auto launch_game(const std::span<const std::string> args, const bool redi
     const std::vector<char*> argv = make_posix_spawn_args(args);
 
     pid_t pid{};
-    if (const int error = posix_spawnp(&pid, args[0].c_str(), &actions, nullptr, argv.data(), environ)) {
+    if (const int error =
+            posix_spawnp(&pid, args[0].c_str(), &actions, nullptr, argv.data(), environ)) {
         switch (error) {
             case ENOENT:
             case ENOTDIR:
