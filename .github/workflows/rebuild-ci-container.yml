@@ -27,13 +27,14 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ github.token }}
-      - name: Build and push
-        uses: docker/build-push-action@v7
-        with:
-          platforms: linux/${{ matrix.arch }}
-          file: ci/containers/debian.Containerfile
-          push: true
-          tags: ghcr.io/${{ github.repository }}-ci:debian-${{ matrix.arch }}
+      - name: Build image
+        run: |
+          docker build \
+            --file ci/containers/debian.Containerfile \
+            --tag ghcr.io/${{ github.repository }}-ci:debian-${{ matrix.arch }}
+      - name: Push image
+        run: |
+          docker push ghcr.io/${{ github.repository }}-ci:debian-${{ matrix.arch }}
   manifest:
     name: Create multi-arch manifest
     needs: build
