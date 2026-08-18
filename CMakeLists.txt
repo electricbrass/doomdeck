@@ -195,8 +195,10 @@ function(configure_target target)
   endif()
 
   # get around an annoying clang + cmake bug
+  # and a clang + libstdc++ bug
   checked_add_compile_flags(${target}
     "-Wno-error=unused-command-line-argument"
+    "-Wno-error=reserved-module-identifier"
   )
 endfunction()
 
