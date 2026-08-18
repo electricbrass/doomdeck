@@ -1,4 +1,5 @@
 # yaml-language-server: $schema=https://www.schemastore.org/clang-tidy.json
 ---
+InheritParentConfig: true
 Checks: >
   -misc-use-internal-linkage
