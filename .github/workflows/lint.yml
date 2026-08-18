@@ -1,0 +1,17 @@
+name: Lint
+
+on: push
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  check-formatting:
+    name: Check Formatting
+    runs-on: ubuntu-26.04
+    container: ghcr.io/${{ github.repository }}-ci:debian
+    steps:
+      - uses: actions/checkout@v7
+      - name: Run clang-format
+        run: find src test -name '*.cpp' -print0 | xargs -0 -r clang-format --dry-run --Werror
