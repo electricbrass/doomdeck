@@ -24,6 +24,16 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - uses: actions/cache@v6
+        with:
+          path: build
+          key: cmake-build-${{ matrix.arch }}-${{ matrix.compiler }}-${{ hashFiles(
+                '**/CMakeLists.txt',
+                '**/*.cmake',
+                '**/*.in',
+                'CMakePresets.json',
+                'ci/containers/debian.Containerfile'
+              ) }}
       - name: Build
         run: |
           cmake --preset ci-${{ matrix.compiler }}
@@ -31,7 +41,7 @@ jobs:
   build-appimage:
     name: Build AppImage (${{ matrix.arch }})
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         include:
           - arch: x86_64
@@ -43,6 +53,16 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - uses: actions/cache@v6
+        with:
+          path: build-appimage
+          key: cmake-appimage-${{ matrix.arch }}-${{ hashFiles(
+                '**/CMakeLists.txt',
+                '**/*.cmake',
+                '**/*.in',
+                'CMakePresets.json',
+                'ci/containers/debian.Containerfile'
+              ) }}
       - name: Build
         run: |
           cmake --preset appimage
@@ -63,6 +83,16 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - uses: actions/cache@v6
+        with:
+          path: build
+          key: cmake-test-${{ matrix.arch }}-${{ hashFiles(
+                '**/CMakeLists.txt',
+                '**/*.cmake',
+                '**/*.in',
+                'CMakePresets.json',
+                'ci/containers/debian.Containerfile'
+              ) }}
       - name: Build and run tests
         run: |
           cmake --workflow --preset test
