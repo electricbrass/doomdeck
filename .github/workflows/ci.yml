@@ -7,8 +7,27 @@ permissions:
   packages: read
 
 jobs:
+  cache-hash:
+    name: Calculate Cache Hash
+    runs-on: ubuntu-26.04
+    outputs:
+      hash: ${{ steps.hash.outputs.hash }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Calculate hash
+        id: hash
+        run: |
+          echo "hash=${{ hashFiles(
+            '**/CMakeLists.txt',
+            '**/*.cmake',
+            '**/*.in',
+            'vendored/**',
+            'CMakePresets.json',
+            'ci/containers/debian.Containerfile'
+          ) }}" >> "$GITHUB_OUTPUT"
   build:
     name: Build (${{ matrix.arch }}, ${{ matrix.compiler }})
+    needs: cache-hash
     strategy:
       fail-fast: false
       matrix:
@@ -27,19 +46,14 @@ jobs:
       - uses: actions/cache@v6
         with:
           path: build
-          key: cmake-build-${{ matrix.arch }}-${{ matrix.compiler }}-${{ hashFiles(
-                '**/CMakeLists.txt',
-                '**/*.cmake',
-                '**/*.in',
-                'CMakePresets.json',
-                'ci/containers/debian.Containerfile'
-              ) }}
+          key: cmake-build-${{ matrix.arch }}-${{ matrix.compiler }}-${{ needs.cache-hash.outputs.hash }}
       - name: Build
         run: |
           cmake --preset ci-${{ matrix.compiler }}
           cmake --build --preset ci-${{ matrix.compiler }}
   build-appimage:
     name: Build AppImage (${{ matrix.arch }})
+    needs: cache-hash
     strategy:
       fail-fast: false
       matrix:
@@ -56,13 +70,7 @@ jobs:
       - uses: actions/cache@v6
         with:
           path: build-appimage
-          key: cmake-appimage-${{ matrix.arch }}-${{ hashFiles(
-                '**/CMakeLists.txt',
-                '**/*.cmake',
-                '**/*.in',
-                'CMakePresets.json',
-                'ci/containers/debian.Containerfile'
-              ) }}
+          key: cmake-appimage-${{ matrix.arch }}-${{ needs.cache-hash.outputs.hash }}
       - name: Build
         run: |
           cmake --preset appimage
@@ -70,6 +78,7 @@ jobs:
     # TODO: build and upload the appimage as an artifact
   test:
     name: Unit Tests (${{ matrix.arch }})
+    needs: cache-hash
     strategy:
       fail-fast: false
       matrix:
@@ -86,13 +95,7 @@ jobs:
       - uses: actions/cache@v6
         with:
           path: build
-          key: cmake-test-${{ matrix.arch }}-${{ hashFiles(
-                '**/CMakeLists.txt',
-                '**/*.cmake',
-                '**/*.in',
-                'CMakePresets.json',
-                'ci/containers/debian.Containerfile'
-              ) }}
+          key: cmake-test-${{ matrix.arch }}-${{ needs.cache-hash.outputs.hash }}
       - name: Build and run tests
         run: |
           cmake --workflow --preset test
