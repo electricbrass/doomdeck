@@ -24,8 +24,7 @@ jobs:
       - uses: actions/checkout@v7
       - name: Login to ghcr
         run: |
-          docker login \
-            --registry ghcr.io \
+          docker login ghcr.io \
             --username ${{ github.actor }} \
             --password ${{ github.token }}
       - name: Build image
@@ -44,8 +43,7 @@ jobs:
     steps:
       - name: Login to ghcr
         run: |
-          docker login \
-            --registry ghcr.io \
+          docker login ghcr.io \
             --username ${{ github.actor }} \
             --password ${{ github.token }}
       - name: Create manifest
