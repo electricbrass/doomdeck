@@ -21,19 +21,22 @@ jobs:
             arch: arm64
     runs-on: ${{ matrix.runner }}
     steps:
+      - uses: actions/checkout@v7
       - name: Login to ghcr
         uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ github.token }}
-      - name: Build and push
-        uses: docker/build-push-action@v7
-        with:
-          platforms: linux/${{ matrix.arch }}
-          file: ci/containers/debian.Containerfile
-          push: true
-          tags: ghcr.io/${{ github.repository }}-ci:debian-${{ matrix.arch }}
+      - name: Build image
+        run: |
+          docker build \
+            --file ci/containers/debian.Containerfile \
+            --tag ghcr.io/${{ github.repository }}-ci:debian-${{ matrix.arch }} \
+            .
+      - name: Push image
+        run: |
+          docker push ghcr.io/${{ github.repository }}-ci:debian-${{ matrix.arch }}
   manifest:
     name: Create multi-arch manifest
     needs: build
@@ -47,7 +50,9 @@ jobs:
           password: ${{ github.token }}
       - name: Create manifest
         run: |
-          docker buildx imagetools create \
-            --tag ghcr.io/${{ github.repository }}-ci:debian \
+          docker manifest create \
+            ghcr.io/${{ github.repository }}-ci:debian \
             ghcr.io/${{ github.repository }}-ci:debian-amd64 \
             ghcr.io/${{ github.repository }}-ci:debian-arm64
+          docker manifest push \
+            ghcr.io/${{ github.repository }}-ci:debian
