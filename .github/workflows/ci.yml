@@ -6,6 +6,7 @@ jobs:
   build:
     name: Build (${{ matrix.arch }}, ${{ matrix.compiler }})
     strategy:
+      fail-fast: false
       matrix:
         compiler: [gcc, clang]
         include:
@@ -25,6 +26,7 @@ jobs:
   build-appimage:
     name: Build AppImage (${{ matrix.arch }})
     strategy:
+      fail-fast: true
       matrix:
         include:
           - runner: ubuntu-26.04
@@ -44,6 +46,7 @@ jobs:
   test:
     name: Unit Tests (${{ matrix.arch }})
     strategy:
+      fail-fast: false
       matrix:
         include:
           - runner: ubuntu-26.04
