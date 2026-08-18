@@ -131,16 +131,16 @@ auto parse_apps_from_columns(const std::string_view columns) -> std::vector<Flat
     using stringutil::trim, util::filter_transform;
     return columns | split('\n') |
            filter_transform([](auto&& line) -> std::optional<FlatpakListEntry> {
-               const auto columns = stringutil::split(trim(std::string_view{line}), '\t');
-               if (columns.size() != 5) {
+               const auto row_fields = stringutil::split(trim(std::string_view{line}), '\t');
+               if (row_fields.size() != 5) {
                    return std::nullopt;
                }
                return FlatpakListEntry{
-                   .name{columns[0]},
-                   .application_id{columns[1]},
-                   .branch{columns[2]},
-                   .options{columns[3]},
-                   .installation{columns[4]},
+                   .name{row_fields[0]},
+                   .application_id{row_fields[1]},
+                   .branch{row_fields[2]},
+                   .options{row_fields[3]},
+                   .installation{row_fields[4]},
                };
            }) |
            to<std::vector<FlatpakListEntry>>();
