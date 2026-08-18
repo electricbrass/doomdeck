@@ -1,2 +1,3 @@
-command_case = "lower_case"
+# makes it warn on stuff like fetchcontent
+#command_case = "lower_case"
 line_max_words = 100
