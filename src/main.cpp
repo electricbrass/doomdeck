@@ -85,7 +85,8 @@ auto handle_event(SDL_Event event, ApplicationState& state) -> bool {
 } // namespace
 
 auto main() -> int {
-    SDL_SetHintWithPriority(SDL_HINT_APP_ID, appinfo::app_id_cstr, SDL_HINT_OVERRIDE);
+    SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_NAME_STRING, appinfo::name_cstr);
+    SDL_SetAppMetadataProperty(SDL_PROP_APP_METADATA_IDENTIFIER_STRING, appinfo::app_id_cstr);
     if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD)) {
         std::println("Error: SDL_Init(): {}", SDL_GetError());
         return 1;
