@@ -33,6 +33,9 @@ RUN wget -qO- https://apt.llvm.org/llvm.sh | bash -s -- ${LLVM_VERSION}
 
 ENV PATH="/usr/lib/llvm-${LLVM_VERSION}/bin:${PATH}"
 
+RUN echo '--gcc-toolchain=/usr/local' > "/usr/lib/llvm-${LLVM_VERSION}/bin/clang.cfg" && \
+    echo '--gcc-toolchain=/usr/local' > "/usr/lib/llvm-${LLVM_VERSION}/bin/clang++.cfg"
+
 RUN case "$TARGETARCH" in \
         amd64) ARCH="x86_64" ;; \
         arm64) ARCH="aarch64" ;; \
