@@ -30,7 +30,7 @@ RUN case "$TARGETARCH" in \
 ENV PATH="/opt/cmake/bin:${PATH}"
 
 RUN wget -qO- https://apt.llvm.org/llvm.sh | bash -s -- ${LLVM_VERSION} && \
-    apt-get install -y clang-tidy-${LLVM_VERSION} && \
+    apt-get install -y clang-tidy-${LLVM_VERSION} clang-format-${LLVM_VERSION} && \
     rm -rf /var/lib/apt/lists/*
 
 ENV PATH="/usr/lib/llvm-${LLVM_VERSION}/bin:${PATH}"
