@@ -114,6 +114,17 @@ if(STATIC_CXX_RUNTIME)
   endif()
 endif()
 
+set(USE_LTO OFF)
+if(ENABLE_LTO)
+  include(CheckIPOSupported)
+  check_ipo_supported(RESULT LTO_SUPPORTED OUTPUT LTO_ERROR)
+  if(LTO_SUPPORTED)
+    set(USE_LTO ON)
+  else()
+    message(FATAL_ERROR "LTO not supported: ${LTO_ERROR}")
+  endif()
+endif()
+
 include(CheckCXXCompilerFlag)
 
 function(checked_add_compile_flags target)
@@ -144,6 +155,7 @@ function(configure_target target)
       CXX_STANDARD 23
       CXX_STANDARD_REQUIRED ON
       CXX_MODULE_STD ON
+      INTERPROCEDURAL_OPTIMIZATION ${USE_LTO}
   )
 
   # Enable some errors that should always be used

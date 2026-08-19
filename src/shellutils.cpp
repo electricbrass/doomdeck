@@ -65,4 +65,4 @@ auto expand_home_dir(const fs::path& path) -> fs::path {
     return home_dir / path_str.substr(2);
 }
 
-}
+} // namespace shellutil

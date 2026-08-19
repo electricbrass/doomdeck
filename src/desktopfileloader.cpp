@@ -152,7 +152,8 @@ public:
             for (const auto& entry : std::views::filter(
                      fs::directory_iterator(dir), [](const fs::directory_entry& entry) {
                          return entry.path().extension() == ".desktop";
-                     })) {
+                     }
+                 )) {
                 std::ifstream stream(entry.path());
                 if (!stream) {
                     // log error somehow
