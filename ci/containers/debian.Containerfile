@@ -3,6 +3,8 @@ ARG TARGETARCH
 ARG CMAKE_VERSION=4.4.2
 ARG LLVM_VERSION=22
 
+ENV CMAKE_GENERATOR=Ninja
+
 RUN apt-get update && apt-get install -y \
     wget \
     lsb-release \
