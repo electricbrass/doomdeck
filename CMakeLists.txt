@@ -291,7 +291,7 @@ target_link_libraries(${APP_EXE} PRIVATE SDL3::SDL3)
 FetchContent_Declare(
   libsl3
   GIT_REPOSITORY https://github.com/a4z/libsl3
-  GIT_TAG v1.2.53003
+  GIT_TAG v1.2.53004
   GIT_SHALLOW
   FIND_PACKAGE_ARGS
 )
