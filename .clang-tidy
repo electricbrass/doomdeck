@@ -72,3 +72,11 @@ CheckOptions:
     value: true
   - key: readability-magic-numbers.IgnoredIntegerValues
     value: 1;2;3;4;5;10
+  # Suggest stdlib types with _t suffix
+  - key: google-runtime-int.TypeSuffix
+    value: _t
+  # Enforce consistent operator style
+  - key: readability-operators-representation.BinaryOperators
+    value: &&;||;!;&;|;^;~;&=;|=;^=;!=
+  - key: readability-operators-representation.OverloadedOperators
+    value: &&;||;!;&;|;^;~;&=;|=;^=;!=
