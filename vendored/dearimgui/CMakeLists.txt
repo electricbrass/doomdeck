@@ -35,7 +35,7 @@ target_compile_features(dearimgui
 FetchContent_Declare(
   Freetype
   GIT_REPOSITORY https://gitlab.freedesktop.org/freetype/freetype
-  GIT_TAG VER-2-14-3
+  GIT_TAG VER-2-15-0
   GIT_SHALLOW
   FIND_PACKAGE_ARGS
 )
