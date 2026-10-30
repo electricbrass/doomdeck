@@ -14,7 +14,7 @@ Checks: >
   cppcoreguidelines-*,
   -cppcoreguidelines-pro-type-vararg,
   -cppcoreguidelines-avoid-magic-numbers,
-  google-explicit-constructor,
+  google-default-arguments,
   google-runtime-int,
   readability-*,
   -readability-identifier-length,
@@ -77,6 +77,6 @@ CheckOptions:
     value: _t
   # Enforce consistent operator style
   - key: readability-operators-representation.BinaryOperators
-    value: &&;||;!;&;|;^;~;&=;|=;^=;!=
+    value: '&&;||;!;&;|;^;~;&=;|=;^=;!='
   - key: readability-operators-representation.OverloadedOperators
-    value: &&;||;!;&;|;^;~;&=;|=;^=;!=
+    value: '&&;||;!;&;|;^;~;&=;|=;^=;!='
