@@ -1,32 +1,15 @@
-cmake_minimum_required(VERSION 4.0)
+cmake_minimum_required(VERSION 4.5)
 
-if(CMAKE_VERSION VERSION_GREATER_EQUAL "4.4.0")
-  set(CMAKE_EXPERIMENTAL_CXX_IMPORT_STD "f35a9ac6-8463-4d38-8eec-5d6008153e7d")
-elseif(CMAKE_VERSION VERSION_GREATER_EQUAL "4.3.0")
-  set(CMAKE_EXPERIMENTAL_CXX_IMPORT_STD "451f2fe2-a8a2-47c3-bc32-94786d8fc91b")
-elseif(CMAKE_VERSION VERSION_GREATER_EQUAL "4.0.3")
-  set(CMAKE_EXPERIMENTAL_CXX_IMPORT_STD "d0edc3af-4c50-42ea-a356-e2862fe7a444")
-else()
-  set(CMAKE_EXPERIMENTAL_CXX_IMPORT_STD "a9e1cf81-9932-4810-974b-6eccaf14e457")
-endif()
 set(CMAKE_COLOR_DIAGNOSTICS ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-if(CMAKE_VERSION VERSION_GREATER_EQUAL "4.3.0")
-  project(
-    DoomDeck
-    VERSION 0.1.0
-    SPDX_LICENSE "GPL-3.0-or-later"
-    DESCRIPTION "A Linux-first Doom launcher"
-  )
-else()
-  project(
-    DoomDeck
-    VERSION 0.1.0
-    DESCRIPTION "A Linux-first Doom launcher"
-  )
-endif()
+project(
+  DoomDeck
+  VERSION 0.1.0
+  SPDX_LICENSE "GPL-3.0-or-later"
+  DESCRIPTION "A Linux-first Doom launcher"
+)
 
 include(FetchContent)
 include(CTest)
@@ -63,16 +46,9 @@ target_sources(${APP_LIB}
 )
 
 # Images for #embed
-if(CMAKE_VERSION VERSION_EQUAL "4.4.0")
-  # Workaround for a bug in 4.4.0
-  target_compile_options(${APP_LIB} PUBLIC
-    "--embed-dir=${CMAKE_CURRENT_SOURCE_DIR}/res"
-  )
-else()
-  target_compile_options(${APP_LIB} PRIVATE
-    "--embed-dir=${CMAKE_CURRENT_SOURCE_DIR}/res"
-  )
-endif()
+target_compile_options(${APP_LIB} PRIVATE
+  "--embed-dir=${CMAKE_CURRENT_SOURCE_DIR}/res"
+)
 
 add_executable(${APP_EXE})
 
@@ -154,7 +130,6 @@ function(configure_target target)
     PROPERTIES
       CXX_STANDARD 23
       CXX_STANDARD_REQUIRED ON
-      CXX_MODULE_STD ON
       INTERPROCEDURAL_OPTIMIZATION ${USE_LTO}
   )
 

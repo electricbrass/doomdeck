@@ -19,7 +19,7 @@ TODO - these aren't actually available yet:
 TODO - improve this, check that minimum compilers are correct:
 
 required:
-- cmake 4.0 or newer
+- cmake 4.5 or newer
 - gcc 16 or newer
 - clang 22 or newer
 - ninja (version?)
