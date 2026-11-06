@@ -17,14 +17,16 @@ jobs:
       - name: Calculate hash
         id: hash
         run: |
-          echo "hash=${{ hashFiles(
+          DOCKER_DIGEST="$(docker buildx imagetools inspect \
+            ghcr.io/${{ github.repository }}-ci:debian --format '{{.Manifest.Digest}}')"
+          FILE_HASH="${{ hashFiles(
             '**/CMakeLists.txt',
             '**/*.cmake',
             '**/*.in',
             'vendored/**',
             'CMakePresets.json',
-            'ci/containers/debian.Containerfile'
-          ) }}" >> "$GITHUB_OUTPUT"
+          ) }}"
+          echo "hash=${FILE_HASH}-${DOCKER_DIGEST#sha256:}" >> "$GITHUB_OUTPUT"
   build:
     name: Build (${{ matrix.arch }}, ${{ matrix.compiler }})
     needs: cache-hash
@@ -99,3 +101,27 @@ jobs:
       - name: Build and run tests
         run: |
           cmake --workflow --preset test
+  check-formatting:
+    name: Check Formatting
+    runs-on: ubuntu-26.04
+    container: ghcr.io/${{ github.repository }}-ci:debian
+    steps:
+      - uses: actions/checkout@v7
+      - name: Run clang-format
+        run: find src test -name '*.cpp' -print0 | xargs -0 -r clang-format --dry-run --Werror
+  check-tidiness:
+    name: Run clang-tidy
+    needs: cache-hash
+    runs-on: ubuntu-26.04
+    container: ghcr.io/${{ github.repository }}-ci:debian
+    steps:
+        - uses: actions/checkout@v7
+        - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+        - uses: actions/cache@v6
+          with:
+            path: build
+            key: cmake-clang-tidy-${{ needs.cache-hash.outputs.hash }}
+        - name: Configure CMake
+          run: cmake --preset ci-clang && cmake --build --preset ci-clang
+        - name: Run clang-tidy
+          run: run-clang-tidy -p build -source-filter "$PWD/src/.*\.cpp\$" -header-filter '' -use-color -warnings-as-errors '*'
