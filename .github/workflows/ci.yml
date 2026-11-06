@@ -24,7 +24,7 @@ jobs:
             '**/*.cmake',
             '**/*.in',
             'vendored/**',
-            'CMakePresets.json',
+            'CMakePresets.json'
           ) }}"
           echo "hash=${FILE_HASH}-${DOCKER_DIGEST#sha256:}" >> "$GITHUB_OUTPUT"
   build:
