@@ -22,6 +22,6 @@ jobs:
     steps:
         - uses: actions/checkout@v7
         - name: Configure CMake
-          run: cmake --preset ci-clang
+          run: cmake --preset ci-clang && cmake --build --preset ci-clang
         - name: Run clang-tidy
           run: run-clang-tidy -p build -source-filter "$PWD/src/.*\.cpp\$" -header-filter '' -use-color -warnings-as-errors '*'
