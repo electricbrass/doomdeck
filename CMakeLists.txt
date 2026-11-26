@@ -163,7 +163,7 @@ function(configure_target target)
   )
 
   if(ENABLE_WERROR)
-    target_compile_options(${target} PRIVATE "-Werror")
+    set_target_properties(${target} PROPERTIES COMPILE_WARNING_AS_ERROR ON)
   endif()
 
   if(ENABLE_ALL_WARNINGS)
